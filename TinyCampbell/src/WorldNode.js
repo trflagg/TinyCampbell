@@ -7,6 +7,8 @@ var cocos  = require('cocos2d')   // Import the cocos2d module
   , geo    = require('geometry')  // Import the geometry module
   , ccp    = geo.ccp              // Short hand to create points
 
+var Const = require('./Const');
+
 // Convenient access to some constructors
 var Layer    = nodes.Layer
   , Scene    = nodes.Scene
@@ -25,11 +27,11 @@ function WorldNode () {
 	//setup world
 	world = new Array();
 	
-	for (var i=0; i<320; i++)
+	for (var i=0; i< Const.worldSizeX; i++)
 	{
 		world[i] = new Array();
 		
-		for (var j=0; j< 320; j++)
+		for (var j=0; j< Const.worldSizeY; j++)
 		{
 			world[i][j] = 0;
 		}
@@ -80,19 +82,19 @@ WorldNode.inherit(Node, {
 		
 		//draw background
 		context.fillStyle = worldBg;
-		context.fillRect(0,0,320,320);
+		context.fillRect(0,0, Const.canvasSizeX, Const.canvasSizeY);
 		
 		//draw world array
-		for (var i=0; i<320; i++)
+		for (var i=0; i< Const.worldSizeX; i++)
 		{
-			for (var j=0; j< 320; j++)
+			for (var j=0; j< Const.worldSizeY; j++)
 			{
 				if (world[i][j] != undefined && world[i][j] == 0)
 				{
 					//0 == do nothing and let the background show through
 					
-					//context.fillStyle = "#00000";
-					//context.fillRect(i,j,1,1);
+					//context.fillStyle = "#ff00ff";
+					//context.fillRect(i*5,j*5,5,5);
 					continue;
 				}
 				else if (world[i][j] != undefined && world[i][j] == 1)
@@ -114,7 +116,8 @@ WorldNode.inherit(Node, {
 					context.fillStyle = "#1B9638";
 				}
 				
-				context.fillRect(i,j,5,5);
+				console.log("fillRect("+i* Const.worldPixSizeX +","+j*Const.worldPixSizeY+",5,5)");
+				context.fillRect(i*Const.worldPixSizeX,j*Const.worldPixSizeY,Const.worldPixSizeX,Const.worldPixSizeY);
 			}
 		}
 	},
@@ -130,9 +133,12 @@ WorldNode.inherit(Node, {
 	
 	setWorld: function (x, y, value)
 	{
-		console.log("Setting world["+x+"]["+y+"] = "+value);
-		if (x < 320 && y < 320)
+		if (x < Const.canvasSizeX && y < Const.canvasSizeX )
 		{
+			x = Math.round(x/Const.worldPixSizeX);
+			y = Math.round(y/Const.worldPixSizeY);
+			
+			console.log("Setting world["+x+"]["+y+"] = "+value);
 			world[x][y] = value;
 		}
 		this.worldUpdated = true;

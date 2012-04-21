@@ -30,9 +30,9 @@ function TinyCampbell () {
 	//setup world
 	var world = new Array();
 	
-	for (i=0; i<320; i++)
+	for (i=0; i<64; i++)
 	{
-		for (j=0; j< 320; j++)
+		for (j=0; j< 64; j++)
 		{
 			world[i][j] = 0;
 		}
