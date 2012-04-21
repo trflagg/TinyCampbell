@@ -8,6 +8,7 @@ var cocos  = require('cocos2d')   // Import the cocos2d module
   , ccp    = geo.ccp              // Short hand to create points
 
 var Const = require('./Const');
+var FishNode = require('./FishNode');
 
 // Convenient access to some constructors
 var Layer    = nodes.Layer
@@ -26,21 +27,24 @@ function WorldNode () {
 
 	//setup world
 	world = new Array();
+	resources = new Array();
 	
 	for (var i=0; i< Const.worldSizeX; i++)
 	{
 		world[i] = new Array();
+		resources[i] = new Array();
 		
 		for (var j=0; j< Const.worldSizeY; j++)
 		{
 			world[i][j] = 0;
+			resources[i][j] = 0;
 		}
 	}
 	
 	this.world = world;
 	this.worldUpdated = true;
 	
-	this.setBackground("#000000");
+	this.setBackground("#ffffff");
 }
 
 
@@ -49,6 +53,7 @@ WorldNode.inherit(Node, {
 	world: null,
 	worldUpdated: null,
 	worldCache: null,
+	fish: new Array(),
 	
 	//setBackground
 	setBackground: function(bgColor)
@@ -101,23 +106,55 @@ WorldNode.inherit(Node, {
 				{
 					//1 == water, Helen, Waaateeer
 					
-					context.fillStyle = "#0000ff";
+					context.fillStyle = "#94dfff";
 				}
 				else if (world[i][j] != undefined && world[i][j] == 2)
 				{
 					//2 == mountains, glorious mountains
 					
-					context.fillStyle = "#967656";
+					context.fillStyle = "#dbb27d";
 				}
 				else if (world[i][j] != undefined && world[i][j] == 3)
 				{
 					//3 == grass, as far as the eye can see
 					
-					context.fillStyle = "#1B9638";
+					context.fillStyle = "#9bd474";
 				}
 				
-				console.log("fillRect("+i* Const.worldPixSizeX +","+j*Const.worldPixSizeY+",5,5)");
+				//console.log("fillRect("+i* Const.worldPixSizeX +","+j*Const.worldPixSizeY+",5,5)");
 				context.fillRect(i*Const.worldPixSizeX,j*Const.worldPixSizeY,Const.worldPixSizeX,Const.worldPixSizeY);
+				
+				//draw any resources
+				if (resources[i][j] == -1)
+				{
+					//fish
+					context.save();
+					context.fillStyle = "#0000ff";
+					context.strokeStyle = "#94dfff"
+					context.lineWidth = 4
+					context.lineCap = "round"
+					//context.scale(0.75, 1);
+					context.beginPath();
+					context.fillRect(i*Const.worldPixSizeX, j*Const.worldPixSizeY, Const.worldPixSizeX - 4, Const.worldPixSizeY - 6);
+					context.stroke();
+					context.closePath();
+					context.restore();	
+				}
+				if (resources[i][j] == -3)
+				{
+					//plants	
+					context.save();
+					context.fillStyle = "#059c00";
+					context.strokeStyle = "#9bd474"
+					context.lineWidth = 4
+					context.lineCap = "round"
+					//context.scale(0.75, 1);
+					context.beginPath();
+					context.fillRect(i*Const.worldPixSizeX, j*Const.worldPixSizeY, Const.worldPixSizeX - 7, Const.worldPixSizeY - 2);
+					context.stroke();
+					context.closePath();
+					context.restore();
+				}
 			}
 		}
 	},
@@ -135,14 +172,122 @@ WorldNode.inherit(Node, {
 	{
 		if (x < Const.canvasSizeX && y < Const.canvasSizeX )
 		{
-			x = Math.round(x/Const.worldPixSizeX);
-			y = Math.round(y/Const.worldPixSizeY);
+			x = Math.floor(x/Const.worldPixSizeX);
+			y = Math.floor(y/Const.worldPixSizeY);
 			
-			console.log("Setting world["+x+"]["+y+"] = "+value);
-			world[x][y] = value;
+			if (x < Const.worldSizeX && y < Const.worldSizeY && x >= 0 && y >= 0)
+			{
+				console.log("Setting world["+x+"]["+y+"] = "+value);
+				world[x][y] = value;
+				this.worldUpdated = true;
+				
+				//update resources counter
+				resources[x][y] = Const.newResourceWaitTime;
+			}
 		}
+	},
+	
+	checkGrowth: function()
+	{
+		for (var i=0; i< Const.worldSizeX; i++)
+		{
+			for (var j=0; j< Const.worldSizeY; j++)
+			{
+				//water
+				if (world[i][j] == 1 && resources[i][j] == 0)
+				{
+					//only generate if surrounding are all water
+					if (this.checkSurroundings(i,j,1))
+					{
+						//set water generation percentage
+						var perc = Const.fishGenerateBasePercent;
+						
+						//multiply based on const and number of surrounding fishes
+						//perc += Const.fishSurroundedMultiplier * (1 + this.getSurroundingFishCount(i, j))
+						
+						var num = Math.random()
+						if (num <= perc)
+						{
+							//generate fish!
+							this.makeNewFish(i, j);
+						}
+					}
+				}
+				//grass
+				else if (world[i][j] == 3 && resources[i][j] == 0)
+				{
+					//only generate if surrounding are all grass
+					if (this.checkSurroundings(i,j,3))
+					{
+						//set grass generation percentage
+						var perc = Const.fishGenerateBasePercent;
+						
+						//multiply based on const and number of surrounding plants
+						//perc += Const.fishSurroundedMultiplier * (1 + this.getSurroundingFishCount(i, j))
+						
+						var num = Math.random()
+						if (num <= perc)
+						{
+							//generate plant!
+							this.makeNewPlant(i, j);
+						}
+					}
+				}
+				//decay
+				else if (resources[i][j] > 0)
+				{
+					resources[i][j] = resources[i][j] - 1;
+				}
+			}
+		}
+	},
+	
+	checkSurroundings: function(i, j, value)
+	{
+		var surrounded = true;
+		
+		//top
+		if (j < (Const.worldSizeY - 1) && world[i][j+1] != value)
+		{
+			surrounded = false;
+		}
+		//bottom
+		else if (j > 0 && world[i][j-1] != value)
+		{
+			surrounded = false;
+		}
+		//right
+		else if (i < (Const.worldSizeX - 1) && world[i+1][j] != value)
+		{
+			surrounded = false;
+		}
+		//left
+		else if (i > 0 && world[i-1][j] != value)
+		{
+			surrounded = false;
+		}
+		
+		return surrounded;
+	},
+	
+	makeNewFish: function(x, y)
+	{
+		// 1= fish
+		resources[x][y] = -1;
 		this.worldUpdated = true;
+		console.log("new fish at ("+x+","+y+")");
+		
+	},
+	
+	makeNewPlant: function(x, y)
+	{
+		// 1= fish
+		resources[x][y] = -3;
+		this.worldUpdated = true;
+		console.log("new plant at ("+x+","+y+")");
+		
 	}
+	
 });
 
 

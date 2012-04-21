@@ -12,6 +12,11 @@ var Const = {
 	'worldSizeY' : 32,
 	'worldPixSizeX' : 10,
 	'worldPixSizeY' : 10,
+	
+	'fishGenerateBasePercent': .10,
+	'fishSurroundedMultiplier': .10,
+	
+	'newResourceWaitTime': 500,
 };
 
 module.exports = Const

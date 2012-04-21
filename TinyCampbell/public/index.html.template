@@ -7,7 +7,7 @@
             body {
                 font-family: Helvetica, Arial, sans-serif;
                 font-size: 10pt;
-                background: #000;
+                background: #fff;
             }
             h1 {
                 text-align: center;
@@ -45,6 +45,7 @@
 		w - water<br/>
 		m - mountains<br/>
 		g - grass<br/>
+		r - toggle run<br/>
         <div id='gameDiv' class="cocos2d-app">
             Loading Tiny Campbell...
             ${scripts}

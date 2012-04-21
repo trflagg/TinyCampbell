@@ -32,6 +32,10 @@ function WorldLayer () {
 	
 	this.isMouseEnabled = true;
 	this.isKeyboardEnabled = true;
+	
+	this.running = false;
+	
+	this.scheduleUpdate();
 }
 
 
@@ -39,6 +43,18 @@ function WorldLayer () {
 WorldLayer.inherit(Layer, {
 	worldNode: null,
 	currMouseResource: null,
+	running: null,
+	
+	
+    update: function(dt) {
+		if (this.running)
+		{
+			this.worldNode.checkGrowth();
+			
+		}
+
+	},
+	
 	
 	keyDown: function(evt)
 	{
@@ -57,6 +73,10 @@ WorldLayer.inherit(Layer, {
 		//g = grass
         else if(evt.keyCode == 71) {
 			this.currMouseResource = 3;
+        }
+		//r = toggle run
+        else if(evt.keyCode == 82) {
+			this.running = !this.running;
         }
 	},
 	
