@@ -16,7 +16,12 @@ var Const = {
 	'fishGenerateBasePercent': .10,
 	'fishSurroundedMultiplier': .10,
 	
-	'newResourceWaitTime': 500,
+	'newResourceWaitTime': 0,
+	
+	'bearMinFish': 3,
+	'bearMinPlants': 3,
+	'bearGenerateBasePercent': .1,
+	'bearGenerateResourceMultiplier': .0005,
 };
 
 module.exports = Const

@@ -8,7 +8,7 @@ var cocos  = require('cocos2d')   // Import the cocos2d module
   , ccp    = geo.ccp              // Short hand to create points
 
 var Const = require('./Const');
-var FishNode = require('./FishNode');
+var Bear = require('./Bear');
 
 // Convenient access to some constructors
 var Layer    = nodes.Layer
@@ -41,8 +41,12 @@ function WorldNode () {
 		}
 	}
 	
+	this.position = new geo.Point(0,0);
+	this.zOrder = -100;
+	
 	this.world = world;
 	this.worldUpdated = true;
+	
 	
 	this.setBackground("#ffffff");
 }
@@ -53,7 +57,7 @@ WorldNode.inherit(Node, {
 	world: null,
 	worldUpdated: null,
 	worldCache: null,
-	fish: new Array(),
+	bears: new Array(),
 	
 	//setBackground
 	setBackground: function(bgColor)
@@ -272,7 +276,7 @@ WorldNode.inherit(Node, {
 	
 	makeNewFish: function(x, y)
 	{
-		// 1= fish
+		// -1= fish
 		resources[x][y] = -1;
 		this.worldUpdated = true;
 		console.log("new fish at ("+x+","+y+")");
@@ -281,13 +285,115 @@ WorldNode.inherit(Node, {
 	
 	makeNewPlant: function(x, y)
 	{
-		// 1= fish
+		// -3 = plant
 		resources[x][y] = -3;
 		this.worldUpdated = true;
 		console.log("new plant at ("+x+","+y+")");
 		
-	}
+	},
 	
+	checkResources: function()
+	{
+		//count 'em all
+		var fishCount = 0;
+		var plantCount = 0;
+		//console.log("checkResources");
+		for (var i=0; i< Const.worldSizeX; i++)
+		{
+			for (var j=0; j< Const.worldSizeY; j++)
+			{
+				// -1 = fish
+				if (resources[i][j] == -1)
+				{
+					fishCount++;
+					//console.log("pl:"+plantCount+" fi:"+fishCount+"");
+				}
+				
+				// -3 = plant
+				else if (resources[i][j] == -3)
+				{
+					plantCount++;
+					//console.log("pl:"+plantCount+" fi:"+fishCount+"");
+				}
+			}
+		}
+		//console.log("pl:"+plantCount+" fi:"+fishCount+"");
+		//check for minimum plant count
+		if (plantCount > Const.bearMinPlants && (fishCount > Const.bearMinFish))
+		{
+			var perc = Const.bearGenerateBasePercent;
+			perc += Const.bearGenerateResourceMultiplier * (fishCount + plantCount);
+			var rand = Math.random();
+			//console.log("perc: "+perc);
+			if (rand <= perc)
+			{
+				//console.log(rand +" <= "+perc);
+				//make Bear
+				this.makeNewBear();
+			}
+		}
+	},
+	
+	makeNewBear: function()
+	{
+		var newBear = new Bear();
+		console.log("new bear created!");
+		
+		//position bear
+		//pick random spot & find closest resource
+		var randX = this.randomXToY(0,32);
+		var randY = this.randomXToY(0,32);
+		//start in grass -- remove(??)
+		
+		var result = this.getClosestResource(randX, randY);
+		if (result == null)
+		{
+			console.log("*******makeNewBear got null closest resource!!!");
+			//no bear for you!
+			return;
+		}
+		newBear.position = new geo.Point(result.x * Const.worldPixSizeX / 2, result.y * Const.worldPixSizeY / 2);
+		//newBear.position = new geo.Point(260, 230);
+		console.log("result = ("+result.x+", "+result.y+")");
+		
+		//newBear.position = new geo.Point(randX * Const.worldPixSizeX, randY * Const.worldPixSizeY);
+		//console.log("newBear.position = ["+randX+", "+randY+"]");
+		console.log("newBear.position = ("+newBear.position.x+", "+newBear.position.y+")");
+		this.bears.push(newBear);
+		this.parent.addChild(newBear,1000);
+	},
+	
+	getClosestResource: function(x, y)
+	{
+		var bestMatch = null;
+		var bestDist = 100000;
+		console.log("getClosest("+x+", "+y+")");
+		for (var i=0; i< Const.worldSizeX; i++)
+		{
+			for (var j=0; j< Const.worldSizeY; j++)
+			{
+				if (resources[i][j] == -1 || resources[i][j] == -3)
+				{
+					//match
+					var dist = Math.sqrt( (Math.pow((x - i),2)) + (Math.pow((y - j), 2)) );
+					
+					if (dist < bestDist)
+					{
+						bestMatch = new geo.Point(i, j);
+						bestDist = dist;
+						console.log("getClosest newMatch dist:"+bestDist+" ("+i+", "+j+")");
+					}
+				}
+			}
+		}
+		
+		return bestMatch;		
+	},
+	
+	randomXToY : function(minVal,maxVal)
+	{
+	  return Math.floor(minVal + (1+maxVal-minVal) * Math.random());
+	},
 });
 
 

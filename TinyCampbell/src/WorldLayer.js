@@ -50,7 +50,7 @@ WorldLayer.inherit(Layer, {
 		if (this.running)
 		{
 			this.worldNode.checkGrowth();
-			
+			this.worldNode.checkResources();
 		}
 
 	},
@@ -84,6 +84,7 @@ WorldLayer.inherit(Layer, {
 	{
 		var director = Director.sharedDirector;
 		var p = director.convertEventToCanvas(evt);
+		console.log("mouseDown.position = ("+p.x+", "+p.y+")");
 		this.worldNode.setWorld(p.x,p.y, this.currMouseResource);
 	},
 	
