@@ -2,16 +2,20 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <title>Tiny Campbell</title>
+        <title>Just Another Day At Tiny World Machine Inc.</title>
+
+		<link href='http://fonts.googleapis.com/css?family=VT323' rel='stylesheet' type='text/css'>
+
         <style type="text/css" media="screen">
             body {
-                font-family: Helvetica, Arial, sans-serif;
-                font-size: 10pt;
-                background: #fff;
+                font-family: 'VT323', sans serif;
+                font-size: 16px;
+                background: #b5b5b5;
             }
             h1 {
                 text-align: center;
-                text-shadow: 0 2px 1px #fff;
+				font-weight: normal;
+				font-size: 48px;
             }
             .cocos2d-app {
                 border: 1px solid #fff;
@@ -19,10 +23,7 @@
                 height: 320px;
                 display: block;
                 margin: 0 auto;
-                -webkit-box-shadow: 0 3px 10px rgba(0, 0, 0, 0.75);
-                -moz-box-shadow:    0 3px 10px rgba(0, 0, 0, 0.75);
-                -o-box-shadow:      0 3px 10px rgba(0, 0, 0, 0.75);
-                box-shadow:         0 3px 10px rgba(0, 0, 0, 0.75);
+                box-shadow:   0 3px 10px rgba(0, 0, 0, 0.75);
             }
         </style>
 
@@ -39,18 +40,19 @@
 		</script>
     </head>
     <body>
-        <h1>Tiny Campbell</h1>
+        <h1>Tiny World Machine Inc.</h1>
 
 		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/jscolor/jscolor.js"></script>
 		Select color: <input id="colorInput" class="color {pickerClosable:true}" 
 			onchange="bgColorChanged();"><br/>
 		e - erase<br/>
 		w - water<br/>
+		h - place hunter camp (near water)<br/>
 		m - mountains<br/>
 		g - grass<br/>
 		r - toggle run<br/>
         <div id='gameDiv' class="cocos2d-app">
-            Loading Tiny Campbell...
+            Loading Tiny World Machine Inc...
             ${scripts}
         </div>
     </body>

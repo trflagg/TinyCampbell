@@ -19,7 +19,7 @@ var Const = {
 	'newResourceWaitTime': 0,
 	'eatenResourceWaitTime': 100,
 	
-	'bearTimerStart': 50,
+	'bearTimerStart': 10,
 	
 	'bearMinFish': 3,
 	'bearMinPlants': 3,
@@ -49,7 +49,7 @@ var Const = {
 	'hunterMinBearCount': 1,
 	'hunterGenerateBasePercent': .001,
 	'hunterGenerateResourceMultiplier': .005,
-	'hunterTimerStart': 100,
+	'hunterTimerStart': 75,
 	
 	'hunterFullHealth': 100,
 	'hunterHealthDecPerTick': 1,
