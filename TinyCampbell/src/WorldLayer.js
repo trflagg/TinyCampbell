@@ -52,7 +52,7 @@ WorldLayer.inherit(Layer, {
 		if (this.running)
 		{
 			this.worldNode.checkGrowth();
-			this.worldNode.tickCreatures();
+			this.worldNode.tickCreatures(dt);
 			this.worldNode.checkResources(dt);
 			this.worldNode.checkBears();
 		}
@@ -96,9 +96,9 @@ WorldLayer.inherit(Layer, {
 			}
         }
 		//h = hunter camp
-		else if(evt.keyCode == 72) {
+		/*else if(evt.keyCode == 72) {
 			this.startPlacingCamp();
-		}
+		}*/
 	},
 	
 	startPlacingCamp: function()

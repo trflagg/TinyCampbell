@@ -34,20 +34,28 @@ GoalManager = function() {
 		ong1: function(event, from, to, msg) 
 		{ 
 			console.log("ENTERED G1"); 
-			this.currGoal = "bearCount > 0";
-			parent.$("#currentGoal").html("Create a bear.");
+			parent.$("#currentGoal").html("<p>Create a bear.</p>");
 			this.goalSuccessString = "The staple food source has been created. +1 culture.";
 		},
 		ong2: function(event, from, to, msg) 
 		{ 
 			console.log("ENTERED G2"); 
-			parent.$("#currentGoal").html("Sustain 2 bears.");
-			this.currGoal = "0";
+			parent.$("#currentGoal").html("<p>Sustain 2 bears for 6 seconds.</p>");
 			this.goalSuccessString = "Sustainability is the key to success. +1 culture.";
 		},
 	
 	},
 	});
+	
+	this.lastFish = 0;
+	this.lastPlant = 0;
+	this.lastBear = 0;
+	this.lastHunter = 0;
+	
+	this.fishTime = 0,
+	this.plantTime = 0,
+	this.bearTime = 0,
+	this.hunterTime = 0,
 	this.fsm = fsm;
 }
 
@@ -71,12 +79,43 @@ GoalManager.inherit(Object, {
 	
 	updateGoals: function(dt, fishCount, plantCount, bearCount, hunterCount)
 	{
+		var success = false;
 		//check current goal
-		if (eval(this.fsm.currGoal))
+		//goal 1
+		if (this.fsm.is("g1"))
+		{
+			//bear > 1
+			if (bearCount >= 1)
+			{
+				success = true;
+			}
+		}
+		else if(this.fsm.is("g2"))
+		{
+			//bear sustained > 1 for 6s
+			if (bearCount >= 1)
+			{
+				if (this.lastBear >= 1)
+				{
+					console.log("2 bears!!!!!!!!!!!");
+					this.bearTime += dt;
+					parent.$("#currentGoal").html("<p>Sustain 2 bears for 6 seconds.<br/>Time: "+ Math.floor(this.bearTime)+"s.</p>");
+					if (this.bearTime >= 6)
+					{
+						success = true;
+					}
+				}
+			}
+			
+			this.lastBear = bearCount;
+				
+		}
+		
+		if (success)
 		{
 			//success! Show message
 			parent.$("#messageDiv").prepend("<p>"+this.fsm.goalSuccessString+"</p>");
-			
+
 			//next!
 			this.fsm.next();
 		}

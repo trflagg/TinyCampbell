@@ -1,0 +1,79 @@
+ body {
+                font-family: 'VT323', sans serif;
+                font-size: 16px;
+                background: #b5b5b5;
+            }
+            h1 {
+                text-align: center;
+				font-weight: normal;
+				font-size: 48px;
+            }
+            h2 {
+                margin: 0px;
+				padding-bottom: 3px;
+            }
+			p
+			{
+				margin: 0px;
+				padding: 0px;
+			}
+			.important
+			{
+				font-weight: bold;
+			}
+			
+            .cocos2d-app {
+                border: 1px solid #fff;
+                width: 320px;
+                height: 320px;
+                display: block;
+                margin: 0 auto;
+                box-shadow:   0 3px 10px rgba(0, 0, 0, 0.75);
+            }
+
+			#pageDiv 
+			{
+			margin-left:auto;
+			margin-right:auto;
+				width: 700px;
+			}
+			#rightDiv 
+			{
+				float: right;
+				width: 160px;
+			}
+			#leftDiv 
+			{
+				float: left;
+				width: 160px;
+			}
+			#statsDiv 
+			{
+				height: 240px;
+			}
+			#goalDiv 
+			{
+				border: 1px solid black;
+				height: 80px;
+				padding-left: 10px;
+				padding-right: 10px;
+			}
+			#controlsDiv 
+			{
+				height: 240px;
+			}
+			#cultureDiv 
+			{
+				border: 1px solid black;
+				height: 80px;
+				padding-left: 10px;
+			}
+			#gameDiv 
+			{
+			}
+			#messageDiv 
+			{
+				height: 174px;
+				overflow: hidden;
+				margin-top: 10px;
+			}

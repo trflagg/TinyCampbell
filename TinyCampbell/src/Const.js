@@ -13,19 +13,19 @@ var Const = {
 	'worldPixSizeX' : 10,
 	'worldPixSizeY' : 10,
 	
-	'fishGenerateBasePercent': .005,
-	'fishSurroundedMultiplier': .001,
-	
-	'newResourceWaitTime': 50,
-	'eatenResourceWaitTime': 500,
-	
-	'bearTimerStart': 40,
-	
-	'bearMinFish': 4,
-	'bearMinPlants': 4,
-	'bearGenerateBasePercent': .004,
-	'bearGenerateResourceMultiplier': .00005,
-	'bearGenerateBearMultiplier': .0001,
+	'fishGenerateBasePercent': .10,
+	'fishSurroundedMultiplier': .10,
+
+	'newResourceWaitTime': 0,
+	'eatenResourceWaitTime': 100,
+
+	'bearTimerStart': 50,
+
+	'bearMinFish': 3,
+	'bearMinPlants': 3,
+	'bearGenerateBasePercent': .005,
+	'bearGenerateResourceMultiplier': .0005,
+	'bearGenerateBearMultiplier': 0,
 	
 	'bearGraphWeights': {
 		0 : 0,
@@ -47,10 +47,10 @@ var Const = {
 	
 	'campPlacingOpacity': 128,
 	
-	'hunterMinBearCount': 4,
-	'hunterGenerateBasePercent': .005,
-	'hunterGenerateResourceMultiplier': .001,
-	'hunterGenerateHunterMultiplier': .001,
+	'hunterMinBearCount': 1,
+	'hunterGenerateBasePercent': .001,
+	'hunterGenerateResourceMultiplier': .005,
+	'hunterGenerateHunterMultiplier': 0,
 	'hunterTimerStart': 0,
 	
 	'hunterFullHealth': 70,

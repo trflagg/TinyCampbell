@@ -185,16 +185,17 @@ var Const = {
 	
 	'fishGenerateBasePercent': .10,
 	'fishSurroundedMultiplier': .10,
-	
+
 	'newResourceWaitTime': 0,
 	'eatenResourceWaitTime': 100,
-	
-	'bearTimerStart': 10,
-	
+
+	'bearTimerStart': 50,
+
 	'bearMinFish': 3,
 	'bearMinPlants': 3,
 	'bearGenerateBasePercent': .005,
 	'bearGenerateResourceMultiplier': .0005,
+	'bearGenerateBearMultiplier': 0,
 	
 	'bearGraphWeights': {
 		0 : 0,
@@ -219,9 +220,10 @@ var Const = {
 	'hunterMinBearCount': 1,
 	'hunterGenerateBasePercent': .001,
 	'hunterGenerateResourceMultiplier': .005,
-	'hunterTimerStart': 75,
+	'hunterGenerateHunterMultiplier': 0,
+	'hunterTimerStart': 0,
 	
-	'hunterFullHealth': 100,
+	'hunterFullHealth': 70,
 	'hunterHealthDecPerTick': 1,
 };
 
@@ -271,6 +273,136 @@ GameScene.inherit(cocos.nodes.Scene, {
 
 module.exports = GameScene
 }, mimetype: "application/javascript", remote: false}; // END: /GameScene.js
+
+
+__jah__.resources["/GoalManager.js"] = {data: function (exports, require, module, __filename, __dirname) {
+
+// Pull in the modules we're going to use
+var cocos  = require('cocos2d')   // Import the cocos2d module
+  , nodes  = cocos.nodes          // Convenient access to 'nodes'
+  , events = require('events')    // Import the events module
+  , geo    = require('geometry')  // Import the geometry module
+  , ccp    = geo.ccp              // Short hand to create points
+
+// Convenient access to some constructors
+var Layer    = nodes.Layer
+  , Scene    = nodes.Scene
+  , Label    = nodes.Label
+  , Director = cocos.Director
+
+var Const = require('./Const');
+
+//////////////
+// Constructor
+//////////////
+GoalManager = function() {
+    // You must always call the super class constructor
+    GoalManager.superclass.constructor.call(this);
+	
+	this.currGoal = "0";
+	
+	var fsm = parent.StateMachine.create({
+	initial: 'g1',
+	events: [
+	   { name: 'next',  from: 'g1',  to: 'g2' },
+	   { name: 'next', from: 'g2', to: 'end'    },
+	{ name: 'next', from: 'end', to: 'end' },
+	],
+	callbacks: {
+		ong1: function(event, from, to, msg) 
+		{ 
+			console.log("ENTERED G1"); 
+			parent.$("#currentGoal").html("<p>Create a bear.</p>");
+			this.goalSuccessString = "The staple food source has been created. +1 culture.";
+		},
+		ong2: function(event, from, to, msg) 
+		{ 
+			console.log("ENTERED G2"); 
+			parent.$("#currentGoal").html("<p>Sustain 2 bears for 6 seconds.</p>");
+			this.goalSuccessString = "Sustainability is the key to success. +1 culture.";
+		},
+	
+	},
+	});
+	
+	this.lastFish = 0;
+	this.lastPlant = 0;
+	this.lastBear = 0;
+	this.lastHunter = 0;
+	
+	this.fishTime = 0,
+	this.plantTime = 0,
+	this.bearTime = 0,
+	this.hunterTime = 0,
+	this.fsm = fsm;
+}
+
+//////////////
+// Inherit function
+/////////////
+GoalManager.inherit(Object, {
+	fsm: null,
+	lastFish: null,
+	lastPlant: null,
+	lastBear: null,
+	lastHunter: null,
+	fishTime: null,
+	plantTime: null,
+	bearTime: null,
+	hunterTime: null,
+	
+	currGoal: null,
+	goalString: null,
+	goalSuccessString: null,
+	
+	updateGoals: function(dt, fishCount, plantCount, bearCount, hunterCount)
+	{
+		var success = false;
+		//check current goal
+		//goal 1
+		if (this.fsm.is("g1"))
+		{
+			//bear > 1
+			if (bearCount >= 1)
+			{
+				success = true;
+			}
+		}
+		else if(this.fsm.is("g2"))
+		{
+			//bear sustained > 1 for 6s
+			if (bearCount >= 1)
+			{
+				if (this.lastBear >= 1)
+				{
+					console.log("2 bears!!!!!!!!!!!");
+					this.bearTime += dt;
+					parent.$("#currentGoal").html("<p>Sustain 2 bears for 6 seconds.<br/>Time: "+ Math.floor(this.bearTime)+"s.</p>");
+					if (this.bearTime >= 6)
+					{
+						success = true;
+					}
+				}
+			}
+			
+			this.lastBear = bearCount;
+				
+		}
+		
+		if (success)
+		{
+			//success! Show message
+			parent.$("#messageDiv").prepend("<p>"+this.fsm.goalSuccessString+"</p>");
+
+			//next!
+			this.fsm.next();
+		}
+			
+	}
+});
+
+module.exports = GoalManager
+}, mimetype: "application/javascript", remote: false}; // END: /GoalManager.js
 
 
 __jah__.resources["/Hunter.js"] = {data: function (exports, require, module, __filename, __dirname) {
@@ -544,7 +676,7 @@ WorldLayer.inherit(Layer, {
 		if (this.running)
 		{
 			this.worldNode.checkGrowth();
-			this.worldNode.tickCreatures();
+			this.worldNode.tickCreatures(dt);
 			this.worldNode.checkResources(dt);
 			this.worldNode.checkBears();
 		}
@@ -557,27 +689,40 @@ WorldLayer.inherit(Layer, {
 		//e = erase
         if(evt.keyCode == 69) {
 			this.currMouseResource = 0;
+			parent.$("#messageDiv").prepend("<p>Tiny World Machine switched to erase mode.</p>");
         }
 		//w = water
         if(evt.keyCode == 87) {
 			this.currMouseResource = 1;
+			parent.$("#messageDiv").prepend("<p>Tiny World Machine switched to water mode.</p>");
         }
 		//m = mountain
         if(evt.keyCode == 77) {
 			this.currMouseResource = 2;
+			parent.$("#messageDiv").prepend("<p>Tiny World Machine switched to mountain mode.</p>");
         }
 		//g = grass
         else if(evt.keyCode == 71) {
 			this.currMouseResource = 3;
+			parent.$("#messageDiv").prepend("<p>Tiny World Machine switched to grass mode.</p>");
         }
 		//r = toggle run
         else if(evt.keyCode == 82) {
-			this.running = !this.running;
+			if(this.running)
+			{
+				this.running = false;
+				parent.$("#messageDiv").prepend("<p>Tiny World Machine stopped.</p>");
+			}
+			else
+			{
+				this.running = true;
+				parent.$("#messageDiv").prepend("<p>Tiny World Machine started.</p>");
+			}
         }
 		//h = hunter camp
-		else if(evt.keyCode == 72) {
+		/*else if(evt.keyCode == 72) {
 			this.startPlacingCamp();
-		}
+		}*/
 	},
 	
 	startPlacingCamp: function()
@@ -664,6 +809,7 @@ var Const = require('./Const');
 var Bear = require('./Bear');
 var Camp = require('./Camp');
 var Hunter = require('./Hunter');
+var GoalManager = require('./GoalManager');
 
 // Convenient access to some constructors
 var Layer    = nodes.Layer
@@ -713,8 +859,12 @@ function WorldNode () {
 	
 	this.placingCamp = false;
 	
+	this.goalManager = new GoalManager();
 	
 	this.setBackground("#ffffff");
+	
+	parent.$("#messageDiv").prepend("<p>Tiny World Machine (&copy;2012, TWM Inc.) booting up...</p>");
+	parent.$("#messageDiv").prepend("<p>Machine is stopped. Press r to begin running machine.</p>");
 }
 
 
@@ -729,6 +879,7 @@ WorldNode.inherit(Node, {
 	hunters: new Array(),
 	hunterTimer: null,
 	placingCamp: null,
+	goalManager: null,
 	
 	//setBackground
 	setBackground: function(bgColor)
@@ -1002,6 +1153,9 @@ WorldNode.inherit(Node, {
 			{
 				var perc = Const.bearGenerateBasePercent;
 				perc += Const.bearGenerateResourceMultiplier * (fishCount + plantCount);
+				//more bears = more bears made!
+				perc += Const.bearGenerateBearMultiplier * this.bears.length;
+				
 				var rand = Math.random();
 				//console.log("perc: "+perc);
 				if (rand <= perc)
@@ -1020,6 +1174,7 @@ WorldNode.inherit(Node, {
 	{
 		var newBear = new Bear();
 		console.log("new bear created!");
+		parent.$("#messageDiv").prepend("<p>New bear born.</p>");
 		
 		//position bear
 		//pick random spot & find closest resource
@@ -1056,12 +1211,45 @@ WorldNode.inherit(Node, {
 			this.bearTick(dt, currBear);
 		}
 		
+		
 		//go through all hunters
 		for (var i=0, arrLength = this.hunters.length; i < arrLength; i++)
 		{
 			var currHunter = this.hunters[i];
 			this.hunterTick(dt, currHunter);
 		}
+		
+		//count all resources
+		var fishCount = 0;
+		var plantCount = 0;
+		
+		//console.log("checkResources");
+		for (var i=0; i< Const.worldSizeX; i++)
+		{
+			for (var j=0; j< Const.worldSizeY; j++)
+			{
+				// -1 = fish
+				if (resources[i][j] == -1)
+				{
+					fishCount++;
+					//console.log("pl:"+plantCount+" fi:"+fishCount+"");
+				}
+				
+				// -3 = plant
+				else if (resources[i][j] == -3)
+				{
+					plantCount++;
+					//console.log("pl:"+plantCount+" fi:"+fishCount+"");
+				}
+			}
+		}
+		parent.$("#bearCount").html("bears: "+this.bears.length);
+		parent.$("#hunterCount").html("hunters: "+this.hunters.length);
+		parent.$("#fishCount").html("fish: "+fishCount);
+		parent.$("#plantCount").html("plants: "+plantCount);
+		
+		//update goals
+		this.goalManager.updateGoals(dt, fishCount, plantCount, this.bears.length, this.hunters.length);
 	},
 	
 	getClosestResource: function(x, y)
@@ -1120,6 +1308,7 @@ WorldNode.inherit(Node, {
 		if (bear.health <= 0)
 		{
 			console.log("Bear dies of hunger.");
+			parent.$("#messageDiv").prepend("<p>A bear has died of hunger.</p>");
 			this.bearKilled(bear);
 			return;
 		}
@@ -1291,13 +1480,13 @@ WorldNode.inherit(Node, {
 		if (y < Const.worldSizeY && creatures[x][y+1] == 0)
 			return new geo.Point(x, y+1);
 		//right?
-		if (x < Const.worldSizeY && creatures[x+1][y] == 0)
+		if (x < Const.worldSizeX && creatures[x+1][y] == 0)
 			return new geo.Point(x+1, y);
 		//left?
-		if (x < Const.worldSizeY && creatures[x-1][y] == 0)
+		if (x > 0 && creatures[x-1][y] == 0)
 			return new geo.Point(x-1, y);
 		//down?
-		if (y < Const.worldSizeY && creatures[x][y-1] == 0)
+		if (y > 0 && creatures[x][y-1] == 0)
 			return new geo.Point(x, y-1);
 			
 		//no luck, return same position
@@ -1308,6 +1497,7 @@ WorldNode.inherit(Node, {
 	{
 		var newCamp = new Camp();
 		console.log("new camp created!");
+		parent.$("#messageDiv").prepend("<p>You can now place a hunter camp. <span class='important'>Hunter camps must be placed near a shore between water and empty space.</span></p>");
 		this.camp = newCamp;
 		this.parent.addChild(newCamp,1000);
 		this.placingCamp = true;
@@ -1350,7 +1540,9 @@ WorldNode.inherit(Node, {
 	placeCamp: function()
 	{
 		this.camp.place();
-		this.placingCamp = false;
+		this.placingCamp = false;	
+		parent.$("#messageDiv").prepend("<p>Hunter camp placed.</p>");
+		
 	},
 	
 	hitCamp: function(p)
@@ -1385,8 +1577,7 @@ WorldNode.inherit(Node, {
 	
 	checkBears: function()
 	{
-		//must have a camp
-		if (this.camp != null && !this.placingCamp)
+		if (!this.placingCamp)
 		{
 			//must have a certain # of bears to make a hunter
 			if (this.bears.length >= Const.hunterMinBearCount)
@@ -1416,14 +1607,23 @@ WorldNode.inherit(Node, {
 	
 	makeNewHunter: function()
 	{
-		var newHunter = new Hunter();
-		console.log("new hunter created!");
-		
-		//position hunter at camp
-		newHunter.setPositionByGrid(this.camp.gridPosition.x, this.camp.gridPosition.y);
-		
-		this.hunters.push(newHunter);
-		this.parent.addChild(newHunter,1000);
+		//do we have a camp? can't make a hunter without a camp!
+		if (this.camp == null)
+		{
+			this.parent.startPlacingCamp();
+		}
+		else 
+		{
+			var newHunter = new Hunter();
+			console.log("new hunter created!");
+			parent.$("#messageDiv").prepend("<p>New hunter born.</p>");
+			
+			//position hunter at camp
+			newHunter.setPositionByGrid(this.camp.gridPosition.x, this.camp.gridPosition.y);
+			
+			this.hunters.push(newHunter);
+			this.parent.addChild(newHunter,1000);
+		}
 		
 	},
 	
@@ -1601,6 +1801,7 @@ WorldNode.inherit(Node, {
 	hunterKilled: function(hunter)
 	{
 		console.log("hunter killed!");
+		parent.$("#messageDiv").prepend("<p>A hunter has died of hunger.</p>");
 		hunter.dead = true;
 		//remove bear
 		this.removeChild(hunter);
@@ -1623,6 +1824,7 @@ WorldNode.inherit(Node, {
 	
 	hunterEatsBear: function(hunter, bear)
 	{
+		parent.$("#messageDiv").prepend("<p>A hunter has eaten a bear.</p>");
 		hunter.eatBear(bear);
 		this.bearEaten(bear);
 	},

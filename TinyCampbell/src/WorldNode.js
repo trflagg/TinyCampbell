@@ -66,6 +66,7 @@ function WorldNode () {
 	this.setBackground("#ffffff");
 	
 	parent.$("#messageDiv").prepend("<p>Tiny World Machine (&copy;2012, TWM Inc.) booting up...</p>");
+	parent.$("#messageDiv").prepend("<p>Machine is stopped. Press r to begin running machine.</p>");
 }
 
 
@@ -698,7 +699,7 @@ WorldNode.inherit(Node, {
 	{
 		var newCamp = new Camp();
 		console.log("new camp created!");
-		parent.$("#messageDiv").prepend("<p>You can now place a hunter camp. <span class='important'>Hunter camps must be placed near a water shore.</span></p>");
+		parent.$("#messageDiv").prepend("<p>You can now place a hunter camp. <span class='important'>Hunter camps must be placed near a shore between water and empty space.</span></p>");
 		this.camp = newCamp;
 		this.parent.addChild(newCamp,1000);
 		this.placingCamp = true;
@@ -1025,7 +1026,7 @@ WorldNode.inherit(Node, {
 	
 	hunterEatsBear: function(hunter, bear)
 	{
-		parent.$("#messageDiv").prepend("<p>A hunter has killed a bear.</p>");
+		parent.$("#messageDiv").prepend("<p>A hunter has eaten a bear.</p>");
 		hunter.eatBear(bear);
 		this.bearEaten(bear);
 	},
