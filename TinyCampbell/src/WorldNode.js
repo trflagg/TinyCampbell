@@ -337,6 +337,8 @@ WorldNode.inherit(Node, {
 			}
 		}
 		//console.log("pl:"+plantCount+" fi:"+fishCount+"");
+		parent.$("#fishCount").html("fish count:"+fishCount);
+		parent.$("#plantCount").html("plant count:"+plantCount);
 		//check for minimum plant count
 		if (plantCount > Const.bearMinPlants && (fishCount > Const.bearMinFish))
 		{
@@ -349,6 +351,9 @@ WorldNode.inherit(Node, {
 			{
 				var perc = Const.bearGenerateBasePercent;
 				perc += Const.bearGenerateResourceMultiplier * (fishCount + plantCount);
+				//more bears = more bears made!
+				perc += Const.bearGenerateBearMultiplier * this.bears.length;
+				
 				var rand = Math.random();
 				//console.log("perc: "+perc);
 				if (rand <= perc)
@@ -403,12 +408,16 @@ WorldNode.inherit(Node, {
 			this.bearTick(dt, currBear);
 		}
 		
+		
 		//go through all hunters
 		for (var i=0, arrLength = this.hunters.length; i < arrLength; i++)
 		{
 			var currHunter = this.hunters[i];
 			this.hunterTick(dt, currHunter);
 		}
+		
+		parent.$("#bearCount").html("bear count:"+this.bears.length);
+		parent.$("#hunterCount").html("hunter count:"+this.hunters.length);
 	},
 	
 	getClosestResource: function(x, y)

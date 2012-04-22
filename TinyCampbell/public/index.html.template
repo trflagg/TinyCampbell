@@ -17,6 +17,9 @@
 				font-weight: normal;
 				font-size: 48px;
             }
+            h2 {
+                margin: 0px;
+            }
             .cocos2d-app {
                 border: 1px solid #fff;
                 width: 320px;
@@ -25,11 +28,55 @@
                 margin: 0 auto;
                 box-shadow:   0 3px 10px rgba(0, 0, 0, 0.75);
             }
+
+			#pageDiv 
+			{
+			margin-left:auto;
+			margin-right:auto;
+				width: 700px;
+			}
+			#rightDiv 
+			{
+				float: right;
+				width: 160px;
+			}
+			#leftDiv 
+			{
+				float: left;
+				width: 160px;
+			}
+			#statsDiv 
+			{
+				height: 240px;
+			}
+			#goalDiv 
+			{
+				border: 1px solid black;
+				height: 80px;
+				padding-left: 10px;
+			}
+			#controlsDiv 
+			{
+				height: 240px;
+			}
+			#cultureDiv 
+			{
+				border: 1px solid black;
+				height: 80px;
+				padding-left: 10px;
+			}
+			#gameDiv 
+			{
+			}
+			#messageDiv 
+			{
+			}
         </style>
 
 		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/astar/astar.js"></script>
 		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/astar/graph.js"></script>
 		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/state-machine.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 		<script type="text/javascript">
 		function bgColorChanged()
 		{
@@ -43,17 +90,47 @@
         <h1>Tiny World Machine Inc.</h1>
 
 		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/jscolor/jscolor.js"></script>
-		Select color: <input id="colorInput" class="color {pickerClosable:true}" 
-			onchange="bgColorChanged();"><br/>
-		e - erase<br/>
-		w - water<br/>
-		h - place hunter camp (near water)<br/>
-		m - mountains<br/>
-		g - grass<br/>
-		r - toggle run<br/>
-        <div id='gameDiv' class="cocos2d-app">
-            Loading Tiny World Machine Inc...
-            ${scripts}
-        </div>
+		
+		<div id='pageDiv'>
+			<div id='leftDiv'>
+				<div id='statsDiv'>
+					<span id='fishCount'>fish count:</span><br/>
+					<span id='plantCount'>plant count:</span><br/>
+					<span id='bearCount'>bear count:</span><br/>
+					<span id='hunterCount'>hunter count:</span><br/>
+				</div>
+				
+				<div id='goalDiv'>
+					<h2>Current Goal</h2>
+					<span id='currentGoal'>
+				</div>
+			</div>
+			
+			<div id='rightDiv'>
+				<div id='controlsDiv'>
+					e - erase<br/>
+					w - water<br/>
+					h - place hunter camp (near water)<br/>
+					m - mountains<br/>
+					g - grass<br/>
+					r - toggle run<br/>
+					change bg color: <input id="colorInput" class="color {pickerClosable:true}" onchange="bgColorChanged();"><br/>
+				</div>
+				
+				<div id='cultureDiv'>
+					<h2>CULTURE!</h2>
+					<span id='cultureCount'>0 Culture</span>
+				</div>
+			</div>
+			
+			<div id='gameDiv' class="cocos2d-app">
+			    Loading Tiny World Machine Inc...
+			    ${scripts}
+			</div>
+			
+			<div id='messageDiv'>
+			</div>
+		</div>
+		
     </body>
 </html>
