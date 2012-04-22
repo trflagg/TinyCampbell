@@ -50,7 +50,8 @@ WorldLayer.inherit(Layer, {
 		if (this.running)
 		{
 			this.worldNode.checkGrowth();
-			this.worldNode.checkResources();
+			this.worldNode.tickCreatures();
+			this.worldNode.checkResources(dt);
 		}
 
 	},

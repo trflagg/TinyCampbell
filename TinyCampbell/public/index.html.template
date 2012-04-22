@@ -28,6 +28,7 @@
 
 		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/astar/astar.js"></script>
 		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/astar/graph.js"></script>
+		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/state-machine.js"></script>
 		<script type="text/javascript">
 		function bgColorChanged()
 		{

@@ -17,11 +17,21 @@ var Const = {
 	'fishSurroundedMultiplier': .10,
 	
 	'newResourceWaitTime': 0,
+	'eatenResourceWaitTime': 100,
+	
+	'bearTimerStart': 300,
 	
 	'bearMinFish': 3,
 	'bearMinPlants': 3,
-	'bearGenerateBasePercent': .1,
+	'bearGenerateBasePercent': .001,
 	'bearGenerateResourceMultiplier': .0005,
+	
+	'bearGraphWeights': {
+		0 : 0,
+		1: 5,
+		2: 1,
+		3: 5,
+	},
 };
 
 module.exports = Const
