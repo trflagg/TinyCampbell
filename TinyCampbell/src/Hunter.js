@@ -17,39 +17,41 @@ var Const = require('./Const');
 //////////////
 // Constructor
 //////////////
-Bear = function() {
+Hunter = function() {
     // You must always call the super class constructor
-    Bear.superclass.constructor.call(this);
+    Hunter.superclass.constructor.call(this);
 	
 	this.contentSize = new geo.Size(Const.worldPixSizeX,Const.worldPixSizeY);
 	this.anchorPoint = new geo.Point(0,0);
 	
 	this.zOrder = 100;
-	this.dead = false;
-	this.health = Const.bearFullHealth;
 	
 	var fsm = parent.StateMachine.create({
 	 	initial: 'searching',
 	 events: [
-	   { name: 'searchForFood',  from: 'eating',  to: 'searching' },
+	   { name: 'searchForFood',  from: 'movingToCamp',  to: 'searching' },
+	   { name: 'searchForFood',  from: 'moving',  to: 'searching' },
 	   { name: 'moveToFood', from: 'searching', to: 'moving'    },
 	   { name: 'eat',  from: 'moving',    to: 'eating' },
+		{name: 'backToCamp', from: 'eating', to: 'searchCamp' },
+		{name: 'moveToCamp', from: 'searchCamp', to: 'movingToCamp' },
 	],
 	
 	});
 	this.fsm = fsm;
 	
+	this.dead = false;
+	this.health = Const.hunterFullHealth;
 }
 
 //////////////
 // Inherit function
 /////////////
-Bear.inherit(cocos.nodes.Node, {
+Hunter.inherit(cocos.nodes.Node, {
 	fsm : null,
 	gridPosition : null,
 	currPath:null,
-	currResource:null,
-	dead: null,
+	currBear:null,
 	health: null,
 	
 	draw: function(context, rect)
@@ -57,7 +59,7 @@ Bear.inherit(cocos.nodes.Node, {
 		if (!this.dead)
 		{
 			//console.log("bear.position = ("+this.position.x+", "+this.position.y+")");
-			context.fillStyle = "#9c7249";
+			context.fillStyle = "#000000";
 			context.fillRect(this.position.x,this.position.y,Const.worldPixSizeX,Const.worldPixSizeY);
 		}
 	},
@@ -74,10 +76,10 @@ Bear.inherit(cocos.nodes.Node, {
 		this.position = new geo.Point(x * Const.worldPixSizeY / 2, y * Const.worldPixSizeY / 2);
 	},
 	
-	eatResource: function(resource)
+	eatBear: function(bear)
 	{
-		this.health = Const.bearFullHealth;
+		this.health = Const.hunterFullHealth;
 	},
 });
 
-module.exports = Bear
+module.exports = Hunter

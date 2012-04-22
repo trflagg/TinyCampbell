@@ -19,11 +19,11 @@ var Const = {
 	'newResourceWaitTime': 0,
 	'eatenResourceWaitTime': 100,
 	
-	'bearTimerStart': 300,
+	'bearTimerStart': 50,
 	
 	'bearMinFish': 3,
 	'bearMinPlants': 3,
-	'bearGenerateBasePercent': .001,
+	'bearGenerateBasePercent': .005,
 	'bearGenerateResourceMultiplier': .0005,
 	
 	'bearGraphWeights': {
@@ -32,6 +32,27 @@ var Const = {
 		2: 1,
 		3: 5,
 	},
+	
+	'bearFullHealth': 30,
+	'bearHealthDecPerTick': 1,
+	
+	
+	'hunterGraphWeights': {
+		0 : 0,
+		1: 5,
+		2: 1,
+		3: 5,
+	},
+	
+	'campPlacingOpacity': 128,
+	
+	'hunterMinBearCount': 1,
+	'hunterGenerateBasePercent': .001,
+	'hunterGenerateResourceMultiplier': .005,
+	'hunterTimerStart': 100,
+	
+	'hunterFullHealth': 100,
+	'hunterHealthDecPerTick': 1,
 };
 
 module.exports = Const

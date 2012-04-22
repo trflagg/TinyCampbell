@@ -17,67 +17,61 @@ var Const = require('./Const');
 //////////////
 // Constructor
 //////////////
-Bear = function() {
+Camp = function() {
     // You must always call the super class constructor
-    Bear.superclass.constructor.call(this);
+    Camp.superclass.constructor.call(this);
 	
-	this.contentSize = new geo.Size(Const.worldPixSizeX,Const.worldPixSizeY);
+	this.contentSize = new geo.Size(2*Const.worldPixSizeX,2*Const.worldPixSizeY);
 	this.anchorPoint = new geo.Point(0,0);
 	
 	this.zOrder = 100;
-	this.dead = false;
-	this.health = Const.bearFullHealth;
-	
-	var fsm = parent.StateMachine.create({
-	 	initial: 'searching',
-	 events: [
-	   { name: 'searchForFood',  from: 'eating',  to: 'searching' },
-	   { name: 'moveToFood', from: 'searching', to: 'moving'    },
-	   { name: 'eat',  from: 'moving',    to: 'eating' },
-	],
-	
-	});
-	this.fsm = fsm;
+	this.placing = true;
+	this.opacity = Const.campPlacingOpacity;
 	
 }
 
 //////////////
 // Inherit function
 /////////////
-Bear.inherit(cocos.nodes.Node, {
-	fsm : null,
+Camp.inherit(cocos.nodes.Node, {
 	gridPosition : null,
 	currPath:null,
-	currResource:null,
-	dead: null,
-	health: null,
+	placing: null,
 	
 	draw: function(context, rect)
 	{
-		if (!this.dead)
-		{
-			//console.log("bear.position = ("+this.position.x+", "+this.position.y+")");
-			context.fillStyle = "#9c7249";
-			context.fillRect(this.position.x,this.position.y,Const.worldPixSizeX,Const.worldPixSizeY);
-		}
+		//console.log("bear.position = ("+this.position.x+", "+this.position.y+")");
+		context.fillStyle = "#000000";
+		context.fillRect(this.position.x,this.position.y,Const.worldPixSizeX*2,Const.worldPixSizeY*2);
 	},
 	
 	setPosition: function(x, y)
 	{
+		console.log("("+x+", "+y+")");
+		
 		this.gridPosition = new geo.Point(Math.floor(x / Const.worldPixSizeX), Math.floor(y / Const.worldPixSizeY));
-		this.position = new geo.Point(x  / 2, y  / 2);
+		this.position = new geo.Point(this.gridPosition.x * Const.worldPixSizeX  / 2, this.gridPosition.y * Const.worldPixSizeY  / 2);
+		console.log("("+this.position.x+", "+this.position.y+")");
 	},
 	
 	setPositionByGrid: function(x, y)
 	{
 		this.gridPosition = new geo.Point(x, y);
-		this.position = new geo.Point(x * Const.worldPixSizeY / 2, y * Const.worldPixSizeY / 2);
+		this.position = new geo.Point(x * Const.worldPixSizeX / 2, y * Const.worldPixSizeY / 2);
 	},
 	
-	eatResource: function(resource)
+	place: function()
 	{
-		this.health = Const.bearFullHealth;
+		this.placing = false;
+		this.opacity = 255;
 	},
+	
+	pickup: function()
+	{
+		this.placing = true;
+		this.opacity = Const.campPlacingOpacity;
+	}
+	
 });
 
-module.exports = Bear
+module.exports = Camp

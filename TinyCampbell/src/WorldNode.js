@@ -9,6 +9,8 @@ var cocos  = require('cocos2d')   // Import the cocos2d module
 
 var Const = require('./Const');
 var Bear = require('./Bear');
+var Camp = require('./Camp');
+var Hunter = require('./Hunter');
 
 // Convenient access to some constructors
 var Layer    = nodes.Layer
@@ -54,6 +56,9 @@ function WorldNode () {
 	this.worldUpdated = true;
 	
 	this.bearTimer = 0;
+	this.hunterTimer = 0;
+	
+	this.placingCamp = false;
 	
 	
 	this.setBackground("#ffffff");
@@ -67,6 +72,10 @@ WorldNode.inherit(Node, {
 	worldCache: null,
 	bears: new Array(),
 	bearTimer: null,
+	camp: null,
+	hunters: new Array(),
+	hunterTimer: null,
+	placingCamp: null,
 	
 	//setBackground
 	setBackground: function(bgColor)
@@ -393,6 +402,13 @@ WorldNode.inherit(Node, {
 			var currBear = this.bears[i];
 			this.bearTick(dt, currBear);
 		}
+		
+		//go through all hunters
+		for (var i=0, arrLength = this.hunters.length; i < arrLength; i++)
+		{
+			var currHunter = this.hunters[i];
+			this.hunterTick(dt, currHunter);
+		}
 	},
 	
 	getClosestResource: function(x, y)
@@ -430,6 +446,31 @@ WorldNode.inherit(Node, {
 	
 	bearTick: function(dt, bear) 
 	{
+		if (bear == undefined)
+		{
+			return 
+		}
+		
+		bear.health -= Const.bearHealthDecPerTick;
+		
+		//set opacity by health
+		var hPerc = bear.health / Const.bearFullHealth;
+		if (hPerc < .5)
+		{
+			bear.opacity = hPerc * 255;
+		}
+		else
+		{
+			bear.opacity = 255;
+		}
+		
+		if (bear.health <= 0)
+		{
+			console.log("Bear dies of hunger.");
+			this.bearKilled(bear);
+			return;
+		}
+		
 		//check state
 		if (bear.fsm.is('searching'))
 		{
@@ -445,7 +486,7 @@ WorldNode.inherit(Node, {
 			this.bearClaimsResource(bear, nextResource);
 			
 			//get path
-			var bearsPath = this.findPath(bear.gridPosition, nextResource);
+			var bearsPath = this.findPathBear(bear.gridPosition, nextResource);
 			console.log("bearsPath: "+bearsPath);
 			bear.currPath = bearsPath;
 			
@@ -475,7 +516,7 @@ WorldNode.inherit(Node, {
 		}
 	},
 	
-	findPath: function(start, end)
+	findPathBear: function(start, end)
 	{
 		//make graph from world
 		var graph = Array();
@@ -497,6 +538,28 @@ WorldNode.inherit(Node, {
 		return path;
 	},
 	
+	
+	findPathHunter: function(start, end)
+	{
+		//make graph from world
+		var graph = Array();
+		
+		for (var i=0; i< Const.worldSizeX; i++)
+		{
+			graph[i] = Array();
+			for (var j=0; j< Const.worldSizeY; j++)
+			{
+				graph[i][j] = Const.hunterGraphWeights[world[i][j]];
+			}
+		}
+		
+		var starGraph = new parent.Graph(graph);
+		var start = starGraph.nodes[start.x][start.y];
+		var end = starGraph.nodes[end.x][end.y];
+		var path = parent.astar.search(starGraph.nodes, start, end);
+		
+		return path;
+	},
 	moveBear: function(bear, x, y)
 	{
 		//if not moving, don't bother
@@ -517,7 +580,7 @@ WorldNode.inherit(Node, {
 			//move (if possible) and recalculate
 			var nextPos = this.getOpenPosition(x, y);
 			this.moveBear(bear, nextPos.x, nextPos.y);
-			var bearsPath = this.findPath(bear.gridPosition, bear.currResource);
+			var bearsPath = this.findPathBear(bear.gridPosition, bear.currResource);
 			console.log("*** Collision! Recalculating bearsPath: "+bearsPath);
 			bear.currPath = bearsPath;
 		}
@@ -528,6 +591,12 @@ WorldNode.inherit(Node, {
 	{
 		resourceClaims[result.x][result.y] = 1;
 		bear.currResource = result;
+	},	
+	
+	bearUnclaimsResource: function(bear, result)
+	{
+		resourceClaims[result.x][result.y] = 0;
+		bear.currResource = null;
 	},
 	
 	bearEatsResource: function(bear, i, j)
@@ -536,6 +605,31 @@ WorldNode.inherit(Node, {
 		resourceClaims[i][j] = 0;
 		resources[i][j] = Const.eatenResourceWaitTime;
 		this.worldUpdated = true;
+	},
+	
+	bearKilled: function(bear)
+	{
+		console.log("bear killed!");
+		bear.dead = true;
+		//remove bear
+		this.removeChild(bear);
+		
+		//remove from array
+		for (var i=0; i < this.bears.length; i++)
+		{
+			//base on position
+//			if (bears[i].gridPosition.x == bear.gridPosition.x &&
+//				bears[i].gridPosition.y == bear.gridPosition.y)
+			if (this.bears[i] == bear)
+			{
+				this.bears.splice(i,1);
+				break;
+			}
+		}
+		if (bear.currResource != null)
+			this.bearUnclaimsResource(bear, bear.currResource);
+		
+		creatures[bear.gridPosition.x][bear.gridPosition.y] = 0;
 	},
 	
 	getOpenPosition: function(x, y)
@@ -556,7 +650,335 @@ WorldNode.inherit(Node, {
 		//no luck, return same position
 		return new geo.Point(x, y);
 	},
+	
+	makeCamp: function()
+	{
+		var newCamp = new Camp();
+		console.log("new camp created!");
+		this.camp = newCamp;
+		this.parent.addChild(newCamp,1000);
+		this.placingCamp = true;
+	},
+	
+	setCampPosition: function(x,y)
+	{
+		this.camp.setPosition(x,y);
 		
+		if (this.canPlaceCamp())
+		{
+			this.camp.opacity = 255;
+		}
+		else
+		{
+			this.camp.opacity = Const.campPlacingOpacity;
+		}
+	},
+	
+	canPlaceCamp: function()
+	{
+		var pos = this.camp.gridPosition;
+		//must be on empty land 
+		if (world[pos.x][pos.y] == 0)
+		{
+			//with water neighbooring
+			if (world[pos.x+1][pos.y] == 1 ||
+				world[pos.x][pos.y+1] == 1 ||
+				world[pos.x+1][pos.y-1] == 1 ||
+				world[pos.x-1][pos.y] == 1)
+			{
+				return true;
+			}
+			
+		}
+		
+		return false;
+	},
+	
+	placeCamp: function()
+	{
+		this.camp.place();
+		this.placingCamp = false;
+	},
+	
+	hitCamp: function(p)
+	{
+		var x = p.x;
+		var y = p.y;
+		
+		if (this.camp == null)
+			return false;
+			
+		if (x < Const.canvasSizeX && y < Const.canvasSizeX )
+		{
+			x = Math.floor(x/Const.worldPixSizeX);
+			y = Math.floor(y/Const.worldPixSizeY);
+			
+			if (x < Const.worldSizeX && y < Const.worldSizeY && x >= 0 && y >= 0)
+			{
+				if (this.camp.gridPosition.x == x && this.camp.gridPosition.y == y)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	},
+		
+	pickupCamp: function()
+	{
+		this.camp.pickup();
+		this.placingCamp = true;
+	},
+	
+	checkBears: function()
+	{
+		//must have a camp
+		if (this.camp != null && !this.placingCamp)
+		{
+			//must have a certain # of bears to make a hunter
+			if (this.bears.length >= Const.hunterMinBearCount)
+			{
+				//check timer
+				if (this.hunterTimer > 0) 
+				{
+					this.hunterTimer--;
+				}
+				else
+				{
+					var perc = Const.hunterGenerateBasePercent;
+					perc += Const.hunterGenerateResourceMultiplier * (this.hunters.length);
+					var rand = Math.random();
+					//console.log("perc: "+perc);
+					if (rand <= perc)
+					{
+						//console.log(rand +" <= "+perc);
+						//make Hunter
+						this.makeNewHunter();
+						this.hunterTimer = Const.hunterTimerStart;
+					}
+				}
+			}
+		}
+	},
+	
+	makeNewHunter: function()
+	{
+		var newHunter = new Hunter();
+		console.log("new hunter created!");
+		
+		//position hunter at camp
+		newHunter.setPositionByGrid(this.camp.gridPosition.x, this.camp.gridPosition.y);
+		
+		this.hunters.push(newHunter);
+		this.parent.addChild(newHunter,1000);
+		
+	},
+	
+	hunterTick: function(dt, hunter)
+	{
+		if (hunter == undefined)
+		{
+			return 
+		}
+		
+		hunter.health -= Const.hunterHealthDecPerTick;
+		
+		//set opacity by health
+		var hPerc = hunter.health / Const.hunterFullHealth;
+		if (hPerc < .5)
+		{
+			hunter.opacity = hPerc * 255;
+		}
+		else
+		{
+			hunter.opacity = 255;
+		}
+		
+		if (hunter.health <= 0)
+		{
+			console.log("Hunter dies of hunger.");
+			this.hunterKilled(hunter);
+			return;
+		}
+		//check state
+		if (hunter.fsm.is('searching'))
+		{
+			//searching
+			//find closest bear
+			var nextBear = this.getClosestBear(hunter.gridPosition.x, hunter.gridPosition.y);
+			if (nextBear == null)
+			{
+				//haha! nothing for you!
+				console.log("**** hunter can't find bear!");
+				return;
+			}
+			this.hunterClaimsBear(hunter, nextBear);
+			
+			//get path
+			var huntersPath = this.findPathHunter(hunter.gridPosition, nextBear.gridPosition);
+			console.log("huntersPath: "+huntersPath);
+			hunter.currPath = huntersPath;
+			
+			//start moving
+			hunter.fsm.moveToFood();
+		}
+		if(hunter.fsm.is('movingToCamp'))
+		{
+			//move hunter along path
+			var nextMove = hunter.currPath.shift();
+			if (nextMove != null)
+			{
+				this.moveHunter(hunter, nextMove.x, nextMove.y);
+				
+				//did we make it?
+				if (hunter.gridPosition.x == this.camp.gridPosition.x && hunter.gridPosition.y == this.camp.gridPosition.y)
+				{
+					//found camp
+					console.log("hunterBackAtCamp");
+					hunter.fsm.searchForFood();
+				}
+			}
+			else
+			{
+				console.log("****** null Hunter Move!");
+				//search!
+				hunter.fsm.searchForFood();
+			}
+		}
+		if(hunter.fsm.is('moving'))
+		{
+			//move hunter along path
+			var nextMove = hunter.currPath.shift();
+			if (nextMove != null)
+			{
+				this.moveHunter(hunter, nextMove.x, nextMove.y);
+				
+				//did we make it?
+				if (hunter.gridPosition.x == hunter.currBear.gridPosition.x && hunter.gridPosition.y == hunter.currBear.gridPosition.y)
+				{
+					//yeah! found the food!
+					//eat the food
+					hunter.fsm.eat();
+				}
+			}
+			else
+			{
+				console.log("****** null Hunter Move!");
+				//search!
+				hunter.fsm.searchForFood();
+			}
+		}
+		if(hunter.fsm.is('eating'))
+		{
+				console.log("hunter found its food at ("+hunter.gridPosition.x+", "+hunter.gridPosition.y+")");
+				this.hunterEatsBear(hunter, hunter.currBear);
+				//back to camp
+				hunter.fsm.backToCamp();
+		}
+		if(hunter.fsm.is('searchCamp'))
+		{
+			console.log("hunter heading back to camp")//get path
+			var huntersPath = this.findPathHunter(hunter.gridPosition, this.camp.gridPosition);
+			console.log("huntersPath: "+huntersPath);
+			hunter.currPath = huntersPath;
+			
+			//start moving
+			hunter.fsm.moveToCamp();
+		}
+	},
+	
+	getClosestBear: function(x, y)
+	{
+		var bestMatch = null;
+		var bestDist = 100000;
+		console.log("getClosest("+x+", "+y+")");
+		
+		//loop through bears
+		for (var i=0, arrLength = this.bears.length; i < arrLength; i++)
+		{
+			var x2 = this.bears[i].gridPosition.x;
+			var y2 = this.bears[i].gridPosition.y;
+			
+			var dist = Math.sqrt( (Math.pow((x - x2),2)) + (Math.pow((y -y2), 2)) );
+						
+			if (dist < bestDist)
+			{
+				bestMatch = this.bears[i]
+				bestDist = dist;
+				console.log("getClosest newMatch dist:"+bestDist+" ("+x2+", "+y2+")");
+			}
+		}
+		
+		return bestMatch;
+		
+	},
+	
+	hunterClaimsBear: function(hunter, bear)
+	{
+		hunter.currBear = bear;
+	},
+	
+	moveHunter: function(hunter, x, y)
+	{
+		//if not moving, don't bother
+		if (hunter.gridPosition.x == x && hunter.gridPosition.y == y)
+			return;
+		
+		//check creature isn't already there
+//		if (creatures[x][y] == 0)
+//		{
+			//modify creatures
+			creatures[hunter.gridPosition.x][hunter.gridPosition.y] = 0;
+			creatures[x][y] = 1;
+			hunter.setPositionByGrid(x, y);
+//		}
+//	else
+//	{
+//		//oh no! somethings already there.
+//		//move (if possible) and recalculate
+//		var nextPos = this.getOpenPosition(x, y);
+//		this.moveBear(bear, nextPos.x, nextPos.y);
+//		var bearsPath = this.findPath(bear.gridPosition, bear.currResource);
+//		console.log("*** Collision! Recalculating bearsPath: "+bearsPath);
+//		bear.currPath = bearsPath;
+//	}
+			
+	},
+	
+	hunterKilled: function(hunter)
+	{
+		console.log("hunter killed!");
+		hunter.dead = true;
+		//remove bear
+		this.removeChild(hunter);
+		
+		//remove from array
+		for (var i=0; i < this.hunters.length; i++)
+		{
+			//base on position
+//			if (bears[i].gridPosition.x == bear.gridPosition.x &&
+//				bears[i].gridPosition.y == bear.gridPosition.y)
+			if (this.hunters[i] == hunter)
+			{
+				this.hunters.splice(i,1);
+				break;
+			}
+		}
+	},
+	
+	
+	
+	hunterEatsBear: function(hunter, bear)
+	{
+		hunter.eatBear(bear);
+		this.bearEaten(bear);
+	},
+	
+	bearEaten: function(bear)
+	{
+		this.bearKilled(bear);
+	},
+	
 	randomXToY : function(minVal,maxVal)
 	{
 	  return Math.floor(minVal + (1+maxVal-minVal) * Math.random());

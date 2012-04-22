@@ -29,6 +29,7 @@ function WorldLayer () {
 	this.worldNode = worldNode;
 	
 	this.currMouseResource = 0;
+	this.placingCamp = false;
 	
 	this.isMouseEnabled = true;
 	this.isKeyboardEnabled = true;
@@ -44,6 +45,7 @@ WorldLayer.inherit(Layer, {
 	worldNode: null,
 	currMouseResource: null,
 	running: null,
+	placingCamp: null,
 	
 	
     update: function(dt) {
@@ -52,6 +54,7 @@ WorldLayer.inherit(Layer, {
 			this.worldNode.checkGrowth();
 			this.worldNode.tickCreatures();
 			this.worldNode.checkResources(dt);
+			this.worldNode.checkBears();
 		}
 
 	},
@@ -79,22 +82,75 @@ WorldLayer.inherit(Layer, {
         else if(evt.keyCode == 82) {
 			this.running = !this.running;
         }
+		//h = hunter camp
+		else if(evt.keyCode == 72) {
+			this.startPlacingCamp();
+		}
+	},
+	
+	startPlacingCamp: function()
+	{
+		this.placingCamp = true;
+		this.worldNode.makeCamp();
+	},
+	
+	placeCamp: function()
+	{
+		this.worldNode.placeCamp();
+		this.placingCamp = false;
 	},
 	
 	mouseDown: function(evt)
 	{
-		var director = Director.sharedDirector;
-		var p = director.convertEventToCanvas(evt);
-		console.log("mouseDown.position = ("+p.x+", "+p.y+")");
-		this.worldNode.setWorld(p.x,p.y, this.currMouseResource);
+		if (!this.placingCamp)
+		{
+			var director = Director.sharedDirector;
+			var p = director.convertEventToCanvas(evt);
+			console.log("mouseDown.position = ("+p.x+", "+p.y+")");
+			
+			//check if it's on a camp
+			if (this.worldNode.hitCamp(p))
+			{
+				this.placingCamp = true;
+				this.worldNode.pickupCamp();
+			}
+			else
+			{
+				//or paint something
+				this.worldNode.setWorld(p.x,p.y, this.currMouseResource);
+			}
+		}
+		else
+		{
+			if (this.worldNode.canPlaceCamp())
+			{
+				this.placeCamp();
+			}
+		}
 	},
 	
 	mouseDragged: function(evt)
 	{
-		var director = Director.sharedDirector;
-		var p = director.convertEventToCanvas(evt);
-		this.worldNode.setWorld(p.x,p.y, this.currMouseResource);
-	}
+		if (!this.placingCamp)
+		{
+			var director = Director.sharedDirector;
+			var p = director.convertEventToCanvas(evt);
+			this.worldNode.setWorld(p.x,p.y, this.currMouseResource);
+		}
+	},
+	
+	
+    mouseMoved: function (evt) 
+	{
+		if (this.placingCamp)
+		{
+			var director = Director.sharedDirector;
+			var p = director.convertEventToCanvas(evt);
+			
+			this.worldNode.setCampPosition(p.x, p.y);
+			
+		}
+	},
 
 });
 
