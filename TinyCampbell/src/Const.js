@@ -24,8 +24,8 @@ var Const = {
 	'bearMinFish': 4,
 	'bearMinPlants': 4,
 	'bearGenerateBasePercent': .004,
-	'bearGenerateResourceMultiplier': .0001,
-	'bearGenerateBearMultiplier': .001,
+	'bearGenerateResourceMultiplier': .00005,
+	'bearGenerateBearMultiplier': .0001,
 	
 	'bearGraphWeights': {
 		0 : 0,
@@ -47,7 +47,7 @@ var Const = {
 	
 	'campPlacingOpacity': 128,
 	
-	'hunterMinBearCount': 2,
+	'hunterMinBearCount': 4,
 	'hunterGenerateBasePercent': .005,
 	'hunterGenerateResourceMultiplier': .001,
 	'hunterGenerateHunterMultiplier': .001,

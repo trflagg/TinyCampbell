@@ -65,22 +65,35 @@ WorldLayer.inherit(Layer, {
 		//e = erase
         if(evt.keyCode == 69) {
 			this.currMouseResource = 0;
+			parent.$("#messageDiv").prepend("<p>Tiny World Machine switched to erase mode.</p>");
         }
 		//w = water
         if(evt.keyCode == 87) {
 			this.currMouseResource = 1;
+			parent.$("#messageDiv").prepend("<p>Tiny World Machine switched to water mode.</p>");
         }
 		//m = mountain
         if(evt.keyCode == 77) {
 			this.currMouseResource = 2;
+			parent.$("#messageDiv").prepend("<p>Tiny World Machine switched to mountain mode.</p>");
         }
 		//g = grass
         else if(evt.keyCode == 71) {
 			this.currMouseResource = 3;
+			parent.$("#messageDiv").prepend("<p>Tiny World Machine switched to grass mode.</p>");
         }
 		//r = toggle run
         else if(evt.keyCode == 82) {
-			this.running = !this.running;
+			if(this.running)
+			{
+				this.running = false;
+				parent.$("#messageDiv").prepend("<p>Tiny World Machine stopped.</p>");
+			}
+			else
+			{
+				this.running = true;
+				parent.$("#messageDiv").prepend("<p>Tiny World Machine started.</p>");
+			}
         }
 		//h = hunter camp
 		else if(evt.keyCode == 72) {

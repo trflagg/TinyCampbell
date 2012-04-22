@@ -19,7 +19,18 @@
             }
             h2 {
                 margin: 0px;
+				padding-bottom: 3px;
             }
+			p
+			{
+				margin: 0px;
+				padding: 0px;
+			}
+			.important
+			{
+				font-weight: bold;
+			}
+			
             .cocos2d-app {
                 border: 1px solid #fff;
                 width: 320px;
@@ -70,6 +81,9 @@
 			}
 			#messageDiv 
 			{
+				height: 174px;
+				overflow: hidden;
+				margin-top: 10px;
 			}
         </style>
 
@@ -80,8 +94,16 @@
 		<script type="text/javascript">
 		function bgColorChanged()
 		{
-			var color ='#'+document.getElementById('colorInput').color
+			var color ='#'+document.getElementById('bgcolorInput').color
 			document.getElementsByTagName('BODY')[0].style.backgroundColor = color;
+			worldBg = color;
+		}
+		function textColorChanged()
+		{
+			var color ='#'+document.getElementById('textcolorInput').color
+			document.getElementsByTagName('BODY')[0].style.color = color;
+			$('#goalDiv').css('border-color',color);
+			$('#cultureDiv').css('border-color',color);
 			worldBg = color;
 		}
 		</script>
@@ -94,10 +116,10 @@
 		<div id='pageDiv'>
 			<div id='leftDiv'>
 				<div id='statsDiv'>
-					<span id='fishCount'>fish count:</span><br/>
-					<span id='plantCount'>plant count:</span><br/>
-					<span id='bearCount'>bear count:</span><br/>
-					<span id='hunterCount'>hunter count:</span><br/>
+					<span id='fishCount'>fish: 0</span><br/>
+					<span id='plantCount'>plants: 0</span><br/>
+					<span id='bearCount'>bears: 0</span><br/>
+					<span id='hunterCount'>hunters: 0</span><br/>
 				</div>
 				
 				<div id='goalDiv'>
@@ -108,13 +130,15 @@
 			
 			<div id='rightDiv'>
 				<div id='controlsDiv'>
-					e - erase<br/>
 					w - water<br/>
-					h - place hunter camp (near water)<br/>
-					m - mountains<br/>
 					g - grass<br/>
+					m - mountains<br/>
+					e - erase<br/>
+					<br/>
 					r - toggle run<br/>
-					change bg color: <input id="colorInput" class="color {pickerClosable:true}" onchange="bgColorChanged();"><br/>
+					<br/>
+					change bg color: <input id="bgcolorInput" class="color {pickerClosable:true}" onchange="bgColorChanged();"><br/>
+					change text color: <input id="textcolorInput" class="color {pickerClosable:true}" onchange="textColorChanged();"><br/>
 				</div>
 				
 				<div id='cultureDiv'>

@@ -11,6 +11,7 @@ var Const = require('./Const');
 var Bear = require('./Bear');
 var Camp = require('./Camp');
 var Hunter = require('./Hunter');
+var GoalManager = require('./GoalManager');
 
 // Convenient access to some constructors
 var Layer    = nodes.Layer
@@ -60,8 +61,11 @@ function WorldNode () {
 	
 	this.placingCamp = false;
 	
+	this.goalManager = new GoalManager();
 	
 	this.setBackground("#ffffff");
+	
+	parent.$("#messageDiv").prepend("<p>Tiny World Machine (&copy;2012, TWM Inc.) booting up...</p>");
 }
 
 
@@ -76,6 +80,7 @@ WorldNode.inherit(Node, {
 	hunters: new Array(),
 	hunterTimer: null,
 	placingCamp: null,
+	goalManager: null,
 	
 	//setBackground
 	setBackground: function(bgColor)
@@ -337,8 +342,6 @@ WorldNode.inherit(Node, {
 			}
 		}
 		//console.log("pl:"+plantCount+" fi:"+fishCount+"");
-		parent.$("#fishCount").html("fish count:"+fishCount);
-		parent.$("#plantCount").html("plant count:"+plantCount);
 		//check for minimum plant count
 		if (plantCount > Const.bearMinPlants && (fishCount > Const.bearMinFish))
 		{
@@ -372,6 +375,7 @@ WorldNode.inherit(Node, {
 	{
 		var newBear = new Bear();
 		console.log("new bear created!");
+		parent.$("#messageDiv").prepend("<p>New bear born.</p>");
 		
 		//position bear
 		//pick random spot & find closest resource
@@ -416,8 +420,37 @@ WorldNode.inherit(Node, {
 			this.hunterTick(dt, currHunter);
 		}
 		
-		parent.$("#bearCount").html("bear count:"+this.bears.length);
-		parent.$("#hunterCount").html("hunter count:"+this.hunters.length);
+		//count all resources
+		var fishCount = 0;
+		var plantCount = 0;
+		
+		//console.log("checkResources");
+		for (var i=0; i< Const.worldSizeX; i++)
+		{
+			for (var j=0; j< Const.worldSizeY; j++)
+			{
+				// -1 = fish
+				if (resources[i][j] == -1)
+				{
+					fishCount++;
+					//console.log("pl:"+plantCount+" fi:"+fishCount+"");
+				}
+				
+				// -3 = plant
+				else if (resources[i][j] == -3)
+				{
+					plantCount++;
+					//console.log("pl:"+plantCount+" fi:"+fishCount+"");
+				}
+			}
+		}
+		parent.$("#bearCount").html("bears: "+this.bears.length);
+		parent.$("#hunterCount").html("hunters: "+this.hunters.length);
+		parent.$("#fishCount").html("fish: "+fishCount);
+		parent.$("#plantCount").html("plants: "+plantCount);
+		
+		//update goals
+		this.goalManager.updateGoals(dt, fishCount, plantCount, this.bears.length, this.hunters.length);
 	},
 	
 	getClosestResource: function(x, y)
@@ -476,6 +509,7 @@ WorldNode.inherit(Node, {
 		if (bear.health <= 0)
 		{
 			console.log("Bear dies of hunger.");
+			parent.$("#messageDiv").prepend("<p>A bear has died of hunger.</p>");
 			this.bearKilled(bear);
 			return;
 		}
@@ -647,13 +681,13 @@ WorldNode.inherit(Node, {
 		if (y < Const.worldSizeY && creatures[x][y+1] == 0)
 			return new geo.Point(x, y+1);
 		//right?
-		if (x < Const.worldSizeY && creatures[x+1][y] == 0)
+		if (x < Const.worldSizeX && creatures[x+1][y] == 0)
 			return new geo.Point(x+1, y);
 		//left?
-		if (x < Const.worldSizeY && creatures[x-1][y] == 0)
+		if (x > 0 && creatures[x-1][y] == 0)
 			return new geo.Point(x-1, y);
 		//down?
-		if (y < Const.worldSizeY && creatures[x][y-1] == 0)
+		if (y > 0 && creatures[x][y-1] == 0)
 			return new geo.Point(x, y-1);
 			
 		//no luck, return same position
@@ -664,6 +698,7 @@ WorldNode.inherit(Node, {
 	{
 		var newCamp = new Camp();
 		console.log("new camp created!");
+		parent.$("#messageDiv").prepend("<p>You can now place a hunter camp. <span class='important'>Hunter camps must be placed near a water shore.</span></p>");
 		this.camp = newCamp;
 		this.parent.addChild(newCamp,1000);
 		this.placingCamp = true;
@@ -706,7 +741,9 @@ WorldNode.inherit(Node, {
 	placeCamp: function()
 	{
 		this.camp.place();
-		this.placingCamp = false;
+		this.placingCamp = false;	
+		parent.$("#messageDiv").prepend("<p>Hunter camp placed.</p>");
+		
 	},
 	
 	hitCamp: function(p)
@@ -741,8 +778,7 @@ WorldNode.inherit(Node, {
 	
 	checkBears: function()
 	{
-		//must have a camp
-		if (this.camp != null && !this.placingCamp)
+		if (!this.placingCamp)
 		{
 			//must have a certain # of bears to make a hunter
 			if (this.bears.length >= Const.hunterMinBearCount)
@@ -772,14 +808,23 @@ WorldNode.inherit(Node, {
 	
 	makeNewHunter: function()
 	{
-		var newHunter = new Hunter();
-		console.log("new hunter created!");
-		
-		//position hunter at camp
-		newHunter.setPositionByGrid(this.camp.gridPosition.x, this.camp.gridPosition.y);
-		
-		this.hunters.push(newHunter);
-		this.parent.addChild(newHunter,1000);
+		//do we have a camp? can't make a hunter without a camp!
+		if (this.camp == null)
+		{
+			this.parent.startPlacingCamp();
+		}
+		else 
+		{
+			var newHunter = new Hunter();
+			console.log("new hunter created!");
+			parent.$("#messageDiv").prepend("<p>New hunter born.</p>");
+			
+			//position hunter at camp
+			newHunter.setPositionByGrid(this.camp.gridPosition.x, this.camp.gridPosition.y);
+			
+			this.hunters.push(newHunter);
+			this.parent.addChild(newHunter,1000);
+		}
 		
 	},
 	
@@ -957,6 +1002,7 @@ WorldNode.inherit(Node, {
 	hunterKilled: function(hunter)
 	{
 		console.log("hunter killed!");
+		parent.$("#messageDiv").prepend("<p>A hunter has died of hunger.</p>");
 		hunter.dead = true;
 		//remove bear
 		this.removeChild(hunter);
@@ -979,6 +1025,7 @@ WorldNode.inherit(Node, {
 	
 	hunterEatsBear: function(hunter, bear)
 	{
+		parent.$("#messageDiv").prepend("<p>A hunter has killed a bear.</p>");
 		hunter.eatBear(bear);
 		this.bearEaten(bear);
 	},
