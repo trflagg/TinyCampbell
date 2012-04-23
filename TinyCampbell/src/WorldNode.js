@@ -62,6 +62,10 @@ function WorldNode () {
 	this.placingCamp = false;
 	
 	this.goalManager = new GoalManager();
+	this.goalManager.owner = this;
+	
+	this.culture = 0;
+	parent.$("#cultureCount").html("<p>"+this.culture + " Culture / "+  Const.dailyCultureQuota+"</p>");
 	
 	this.setBackground("#ffffff");
 	
@@ -82,6 +86,7 @@ WorldNode.inherit(Node, {
 	hunterTimer: null,
 	placingCamp: null,
 	goalManager: null,
+	culture: null,
 	
 	//setBackground
 	setBackground: function(bgColor)
@@ -679,10 +684,10 @@ WorldNode.inherit(Node, {
 	getOpenPosition: function(x, y)
 	{
 		//up?
-		if (y < Const.worldSizeY && creatures[x][y+1] == 0)
+		if (y < Const.worldSizeY-1 && creatures[x][y+1] == 0)
 			return new geo.Point(x, y+1);
 		//right?
-		if (x < Const.worldSizeX && creatures[x+1][y] == 0)
+		if (x < Const.worldSizeX-1 && creatures[x+1][y] == 0)
 			return new geo.Point(x+1, y);
 		//left?
 		if (x > 0 && creatures[x-1][y] == 0)
@@ -699,7 +704,7 @@ WorldNode.inherit(Node, {
 	{
 		var newCamp = new Camp();
 		console.log("new camp created!");
-		parent.$("#messageDiv").prepend("<p>You can now place a hunter camp. <span class='important'>Hunter camps must be placed near a shore between water and empty space.</span></p>");
+		parent.$("#messageDiv").prepend("<p>You can now place a hunter camp. <span class='important'>Hunter camps must be placed along the shore.</span></p>");
 		this.camp = newCamp;
 		this.parent.addChild(newCamp,1000);
 		this.placingCamp = true;
@@ -722,8 +727,8 @@ WorldNode.inherit(Node, {
 	canPlaceCamp: function()
 	{
 		var pos = this.camp.gridPosition;
-		//must be on empty land 
-		if (world[pos.x][pos.y] == 0)
+		//must be on non-water land 
+		if (world[pos.x][pos.y] != 1)
 		{
 			//with water neighbooring
 			if (world[pos.x+1][pos.y] == 1 ||
@@ -744,6 +749,11 @@ WorldNode.inherit(Node, {
 		this.camp.place();
 		this.placingCamp = false;	
 		parent.$("#messageDiv").prepend("<p>Hunter camp placed.</p>");
+		if(this.newHunter)
+		{
+			this.newHunter = false;
+			this.makeNewHunter();
+		}
 		
 	},
 	
@@ -812,7 +822,13 @@ WorldNode.inherit(Node, {
 		//do we have a camp? can't make a hunter without a camp!
 		if (this.camp == null)
 		{
+			//only if in goal 4!
+			if (!this.goalManager.fsm.is("g4"))
+			{
+				return;
+			}
 			this.parent.startPlacingCamp();
+			this.newHunter = true;
 		}
 		else 
 		{
@@ -1034,6 +1050,22 @@ WorldNode.inherit(Node, {
 	bearEaten: function(bear)
 	{
 		this.bearKilled(bear);
+	},
+	
+	addCulture: function(message)
+	{
+		this.culture++;
+		parent.$("#cultureCount").html("<p>"+this.culture + " Culture / "+ Const.dailyCultureQuota+ "</p><p>"+message+"</p>");
+		if (this.culture == Const.dailyCultureQuota)
+			this.winGame();
+			
+	},
+	
+	winGame: function()
+	{
+		this.parent.running = false;
+		parent.$("#messageDiv").prepend("<p>DAILY CULTURE QUOTA MET! YOU WIN!!!</p>");
+		alert("You have completed your daily quota of culture! You win!! Now you get to go home and spend a few hours with your family, go to sleep, wake up, and come here and do it all over again tomorrow! Every day for the rest of your life! Congratulations!!!");
 	},
 	
 	randomXToY : function(minVal,maxVal)

@@ -13,19 +13,19 @@ var Const = {
 	'worldPixSizeX' : 10,
 	'worldPixSizeY' : 10,
 	
-	'fishGenerateBasePercent': .10,
-	'fishSurroundedMultiplier': .10,
+	'fishGenerateBasePercent': .005,
+	'fishSurroundedMultiplier': .005,
 
-	'newResourceWaitTime': 0,
-	'eatenResourceWaitTime': 100,
+	'newResourceWaitTime': 70,
+	'eatenResourceWaitTime': 330,
 
-	'bearTimerStart': 50,
+	'bearTimerStart': 80,
 
 	'bearMinFish': 3,
 	'bearMinPlants': 3,
 	'bearGenerateBasePercent': .005,
-	'bearGenerateResourceMultiplier': .0005,
-	'bearGenerateBearMultiplier': 0,
+	'bearGenerateResourceMultiplier': .0015,
+	'bearGenerateBearMultiplier': .002,
 	
 	'bearGraphWeights': {
 		0 : 0,
@@ -47,14 +47,16 @@ var Const = {
 	
 	'campPlacingOpacity': 128,
 	
-	'hunterMinBearCount': 1,
-	'hunterGenerateBasePercent': .001,
-	'hunterGenerateResourceMultiplier': .005,
+	'hunterMinBearCount': 6,
+	'hunterGenerateBasePercent': .005,
+	'hunterGenerateResourceMultiplier': .001,
 	'hunterGenerateHunterMultiplier': 0,
-	'hunterTimerStart': 0,
+	'hunterTimerStart': 75,
 	
-	'hunterFullHealth': 70,
+	'hunterFullHealth': 80,
 	'hunterHealthDecPerTick': 1,
+	
+	'dailyCultureQuota': 5,
 };
 
 module.exports = Const

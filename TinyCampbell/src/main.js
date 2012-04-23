@@ -24,7 +24,7 @@ function TinyCampbell () {
     TinyCampbell.superclass.constructor.call(this)
 
 	var director = Director.sharedDirector
-	director.displayFPS = true;
+	director.displayFPS = false;
 	
 	
 	//setup world

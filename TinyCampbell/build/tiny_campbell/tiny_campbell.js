@@ -183,19 +183,19 @@ var Const = {
 	'worldPixSizeX' : 10,
 	'worldPixSizeY' : 10,
 	
-	'fishGenerateBasePercent': .10,
-	'fishSurroundedMultiplier': .10,
+	'fishGenerateBasePercent': .005,
+	'fishSurroundedMultiplier': .005,
 
-	'newResourceWaitTime': 0,
-	'eatenResourceWaitTime': 100,
+	'newResourceWaitTime': 70,
+	'eatenResourceWaitTime': 330,
 
-	'bearTimerStart': 50,
+	'bearTimerStart': 80,
 
 	'bearMinFish': 3,
 	'bearMinPlants': 3,
 	'bearGenerateBasePercent': .005,
-	'bearGenerateResourceMultiplier': .0005,
-	'bearGenerateBearMultiplier': 0,
+	'bearGenerateResourceMultiplier': .0015,
+	'bearGenerateBearMultiplier': .002,
 	
 	'bearGraphWeights': {
 		0 : 0,
@@ -217,14 +217,16 @@ var Const = {
 	
 	'campPlacingOpacity': 128,
 	
-	'hunterMinBearCount': 1,
-	'hunterGenerateBasePercent': .001,
-	'hunterGenerateResourceMultiplier': .005,
+	'hunterMinBearCount': 6,
+	'hunterGenerateBasePercent': .005,
+	'hunterGenerateResourceMultiplier': .001,
 	'hunterGenerateHunterMultiplier': 0,
-	'hunterTimerStart': 0,
+	'hunterTimerStart': 75,
 	
-	'hunterFullHealth': 70,
+	'hunterFullHealth': 80,
 	'hunterHealthDecPerTick': 1,
+	
+	'dailyCultureQuota': 5,
 };
 
 module.exports = Const
@@ -305,7 +307,10 @@ GoalManager = function() {
 	initial: 'g1',
 	events: [
 	   { name: 'next',  from: 'g1',  to: 'g2' },
-	   { name: 'next', from: 'g2', to: 'end'    },
+	   { name: 'next', from: 'g2', to: 'g3'    },
+	   { name: 'next', from: 'g3', to: 'g4'    },
+	   { name: 'next', from: 'g4', to: 'g5'    },
+	   { name: 'next', from: 'g5', to: 'end'    },
 	{ name: 'next', from: 'end', to: 'end' },
 	],
 	callbacks: {
@@ -313,13 +318,31 @@ GoalManager = function() {
 		{ 
 			console.log("ENTERED G1"); 
 			parent.$("#currentGoal").html("<p>Create a bear.</p>");
-			this.goalSuccessString = "The staple food source has been created. +1 culture.";
+			this.goalSuccessString = "Staple food created.";
 		},
 		ong2: function(event, from, to, msg) 
 		{ 
 			console.log("ENTERED G2"); 
-			parent.$("#currentGoal").html("<p>Sustain 2 bears for 6 seconds.</p>");
-			this.goalSuccessString = "Sustainability is the key to success. +1 culture.";
+			parent.$("#currentGoal").html("<p>Sustain 2 bears for 10 seconds.</p>");
+			this.goalSuccessString = "Sustainability is the key to success.";
+		},
+		ong3: function(event, from, to, msg) 
+		{ 
+			console.log("ENTERED G3"); 
+			parent.$("#currentGoal").html("<p>Sustain 4 bears for 10 seconds.</p>");
+			this.goalSuccessString = "A strong herd is necessary for survival.";
+		},
+		ong4: function(event, from, to, msg) 
+		{ 
+			console.log("ENTERED G4"); 
+			parent.$("#currentGoal").html("<p>Create a hunter.</p>");
+			this.goalSuccessString = "Long, long ago there was only one of us.";
+		},
+		ong5: function(event, from, to, msg) 
+		{ 
+			console.log("ENTERED G4"); 
+			parent.$("#currentGoal").html("<p>Sustain 2 hunters for 10 seconds.</p>");
+			this.goalSuccessString = "Communication flourishes when there are 2.";
 		},
 	
 	},
@@ -355,6 +378,8 @@ GoalManager.inherit(Object, {
 	goalString: null,
 	goalSuccessString: null,
 	
+	owner: null,
+	
 	updateGoals: function(dt, fishCount, plantCount, bearCount, hunterCount)
 	{
 		var success = false;
@@ -371,29 +396,94 @@ GoalManager.inherit(Object, {
 		else if(this.fsm.is("g2"))
 		{
 			//bear sustained > 1 for 6s
-			if (bearCount >= 1)
+			if (bearCount >= 2)
 			{
-				if (this.lastBear >= 1)
+				if (this.lastBear >= 2)
 				{
-					console.log("2 bears!!!!!!!!!!!");
 					this.bearTime += dt;
-					parent.$("#currentGoal").html("<p>Sustain 2 bears for 6 seconds.<br/>Time: "+ Math.floor(this.bearTime)+"s.</p>");
-					if (this.bearTime >= 6)
+					parent.$("#currentGoal").html("<p>Sustain 2 bears for 10 seconds.<br/>Best time: "+ Math.floor(this.bearTime)+"s.</p>");
+					if (this.bearTime >= 10)
 					{
+						//reset!
+						this.bearTime = 0;
 						success = true;
 					}
 				}
 			}
+			else
+			{
+				//reset
+				this.bearTime = 0;
+			}
 			
 			this.lastBear = bearCount;
+				
+		}
+		else if(this.fsm.is("g3"))
+		{
+			//bear sustained > 4 for 10s
+			if (bearCount >= 4)
+			{
+				if (this.lastBear >= 4)
+				{
+					this.bearTime += dt;
+					parent.$("#currentGoal").html("<p>Sustain 4 bears for 10 seconds.<br/>Best time: "+ Math.floor(this.bearTime)+"s.</p>");
+					if (this.bearTime >= 10)
+					{
+						this.bearTime = 0;
+						success = true;
+					}
+				}
+			}
+			else
+			{
+				//reset
+				this.bearTime = 0;
+			}
+			
+			this.lastBear = bearCount;
+				
+		}
+		else if(this.fsm.is("g4"))
+		{
+			//create a hunter
+			if (hunterCount >= 1)
+			{
+				success = true;
+			}
+				
+		}
+		else if(this.fsm.is("g5"))
+		{
+			//bear sustained > 4 for 10s
+			if (hunterCount >= 2)
+			{
+				if (this.lastHunter >= 2)
+				{
+					this.hunterTime += dt;
+					parent.$("#currentGoal").html("<p>Sustain 2 hunters for 10 seconds.<br/>Best time: "+ Math.floor(this.hunterTime)+"s.</p>");
+					if (this.hunterTime >= 10)
+					{
+						this.hunterTime = 0;
+						success = true;
+					}
+				}
+			}
+			else
+			{
+				//reset
+				this.hunterTime = 0;
+			}
+			
+			this.lastHunter = hunterCount;
 				
 		}
 		
 		if (success)
 		{
 			//success! Show message
-			parent.$("#messageDiv").prepend("<p>"+this.fsm.goalSuccessString+"</p>");
-
+			parent.$("#messageDiv").prepend("<p class='goalAchieved'>GOAL COMPLETED!!!! "+this.fsm.goalSuccessString+" +1 CULTURE!</p>");
+			this.owner.addCulture(this.fsm.goalSuccessString);
 			//next!
 			this.fsm.next();
 		}
@@ -570,7 +660,7 @@ function TinyCampbell () {
     TinyCampbell.superclass.constructor.call(this)
 
 	var director = Director.sharedDirector
-	director.displayFPS = true;
+	director.displayFPS = false;
 	
 	
 	//setup world
@@ -719,6 +809,11 @@ WorldLayer.inherit(Layer, {
 				parent.$("#messageDiv").prepend("<p>Tiny World Machine started.</p>");
 			}
         }
+        else if(evt.keyCode == 70) {
+			var director = Director.sharedDirector
+			director.displayFPS = !director.displayFPS;
+        }
+		
 		//h = hunter camp
 		/*else if(evt.keyCode == 72) {
 			this.startPlacingCamp();
@@ -860,6 +955,10 @@ function WorldNode () {
 	this.placingCamp = false;
 	
 	this.goalManager = new GoalManager();
+	this.goalManager.owner = this;
+	
+	this.culture = 0;
+	parent.$("#cultureCount").html("<p>"+this.culture + " Culture / "+  Const.dailyCultureQuota+"</p>");
 	
 	this.setBackground("#ffffff");
 	
@@ -880,6 +979,7 @@ WorldNode.inherit(Node, {
 	hunterTimer: null,
 	placingCamp: null,
 	goalManager: null,
+	culture: null,
 	
 	//setBackground
 	setBackground: function(bgColor)
@@ -1477,10 +1577,10 @@ WorldNode.inherit(Node, {
 	getOpenPosition: function(x, y)
 	{
 		//up?
-		if (y < Const.worldSizeY && creatures[x][y+1] == 0)
+		if (y < Const.worldSizeY-1 && creatures[x][y+1] == 0)
 			return new geo.Point(x, y+1);
 		//right?
-		if (x < Const.worldSizeX && creatures[x+1][y] == 0)
+		if (x < Const.worldSizeX-1 && creatures[x+1][y] == 0)
 			return new geo.Point(x+1, y);
 		//left?
 		if (x > 0 && creatures[x-1][y] == 0)
@@ -1497,7 +1597,7 @@ WorldNode.inherit(Node, {
 	{
 		var newCamp = new Camp();
 		console.log("new camp created!");
-		parent.$("#messageDiv").prepend("<p>You can now place a hunter camp. <span class='important'>Hunter camps must be placed near a shore between water and empty space.</span></p>");
+		parent.$("#messageDiv").prepend("<p>You can now place a hunter camp. <span class='important'>Hunter camps must be placed along the shore.</span></p>");
 		this.camp = newCamp;
 		this.parent.addChild(newCamp,1000);
 		this.placingCamp = true;
@@ -1520,8 +1620,8 @@ WorldNode.inherit(Node, {
 	canPlaceCamp: function()
 	{
 		var pos = this.camp.gridPosition;
-		//must be on empty land 
-		if (world[pos.x][pos.y] == 0)
+		//must be on non-water land 
+		if (world[pos.x][pos.y] != 1)
 		{
 			//with water neighbooring
 			if (world[pos.x+1][pos.y] == 1 ||
@@ -1542,6 +1642,11 @@ WorldNode.inherit(Node, {
 		this.camp.place();
 		this.placingCamp = false;	
 		parent.$("#messageDiv").prepend("<p>Hunter camp placed.</p>");
+		if(this.newHunter)
+		{
+			this.newHunter = false;
+			this.makeNewHunter();
+		}
 		
 	},
 	
@@ -1610,7 +1715,13 @@ WorldNode.inherit(Node, {
 		//do we have a camp? can't make a hunter without a camp!
 		if (this.camp == null)
 		{
+			//only if in goal 4!
+			if (!this.goalManager.fsm.is("g4"))
+			{
+				return;
+			}
 			this.parent.startPlacingCamp();
+			this.newHunter = true;
 		}
 		else 
 		{
@@ -1832,6 +1943,22 @@ WorldNode.inherit(Node, {
 	bearEaten: function(bear)
 	{
 		this.bearKilled(bear);
+	},
+	
+	addCulture: function(message)
+	{
+		this.culture++;
+		parent.$("#cultureCount").html("<p>"+this.culture + " Culture / "+ Const.dailyCultureQuota+ "</p><p>"+message+"</p>");
+		if (this.culture == Const.dailyCultureQuota)
+			this.winGame();
+			
+	},
+	
+	winGame: function()
+	{
+		this.parent.running = false;
+		parent.$("#messageDiv").prepend("<p>DAILY CULTURE QUOTA MET! YOU WIN!!!</p>");
+		alert("You have completed your daily quota of culture! You win!! Now you get to go home and spend a few hours with your family, go to sleep, wake up, and come here and do it all over again tomorrow! Every day for the rest of your life! Congratulations!!!");
 	},
 	
 	randomXToY : function(minVal,maxVal)

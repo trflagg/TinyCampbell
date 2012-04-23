@@ -95,6 +95,11 @@ WorldLayer.inherit(Layer, {
 				parent.$("#messageDiv").prepend("<p>Tiny World Machine started.</p>");
 			}
         }
+        else if(evt.keyCode == 70) {
+			var director = Director.sharedDirector
+			director.displayFPS = !director.displayFPS;
+        }
+		
 		//h = hunter camp
 		/*else if(evt.keyCode == 72) {
 			this.startPlacingCamp();
