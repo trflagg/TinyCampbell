@@ -13,11 +13,11 @@ var Const = {
 	'worldPixSizeX' : 10,
 	'worldPixSizeY' : 10,
 	
-	'fishGenerateBasePercent': .005,
+	'fishGenerateBasePercent': .009,
 	'fishSurroundedMultiplier': .005,
 
 	'newResourceWaitTime': 70,
-	'eatenResourceWaitTime': 330,
+	'eatenResourceWaitTime': 300,
 
 	'bearTimerStart': 80,
 
@@ -34,7 +34,7 @@ var Const = {
 		3: 5,
 	},
 	
-	'bearFullHealth': 30,
+	'bearFullHealth': 40,
 	'bearHealthDecPerTick': 1,
 	
 	
@@ -51,7 +51,7 @@ var Const = {
 	'hunterGenerateBasePercent': .005,
 	'hunterGenerateResourceMultiplier': .001,
 	'hunterGenerateHunterMultiplier': 0,
-	'hunterTimerStart': 75,
+	'hunterTimerStart': 50,
 	
 	'hunterFullHealth': 80,
 	'hunterHealthDecPerTick': 1,
