@@ -10,13 +10,13 @@
 		<link href='public/game.css' rel='stylesheet' type='text/css'>
 
         <style type="text/css" media="screen">
-           
+
         </style>
 
 
-		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/astar/astar.js"></script>
-		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/astar/graph.js"></script>
-		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/state-machine.js"></script>
+		<script type="text/javascript" src="scripts/astar/astar.js"></script>
+		<script type="text/javascript" src="scripts/astar/graph.js"></script>
+		<script type="text/javascript" src="scripts/state-machine.js"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 		<script type="text/javascript">
 		function bgColorChanged()
@@ -38,8 +38,8 @@
     <body>
         <h1>Tiny World Machine Inc.</h1>
 
-		<script type="text/javascript" src="http://hi-scor.es/ld23/scripts/jscolor/jscolor.js"></script>
-		
+		<script type="text/javascript" src="scripts/jscolor/jscolor.js"></script>
+
 		<div id='pageDiv'>
 			<div id='leftDiv'>
 				<div id='statsDiv'>
@@ -48,13 +48,13 @@
 					<span id='bearCount'>bears: 0</span><br/>
 					<span id='hunterCount'>hunters: 0</span><br/>
 				</div>
-				
+
 				<div id='goalDiv'>
 					<h2>Current Goal</h2>
 					<span id='currentGoal'>
 				</div>
 			</div>
-			
+
 			<div id='rightDiv'>
 				<div id='controlsDiv'>
 					w - water<br/>
@@ -67,21 +67,21 @@
 					change bg color: <input id="bgcolorInput" class="color {pickerClosable:true}" onchange="bgColorChanged();"><br/>
 					change text color: <input id="textcolorInput" class="color {pickerClosable:true}" onchange="textColorChanged();"><br/>
 				</div>
-				
+
 				<div id='cultureDiv'>
 					<h2>CULTURE!</h2>
 					<span id='cultureCount'>0 Culture</span>
 				</div>
 			</div>
-			
+
 			<div id='gameDiv' class="cocos2d-app">
 			    Loading Tiny World Machine Inc...
 			    <script src="tiny_campbell/init.js" type="text/javascript"></script>
 			</div>
-			
+
 			<div id='messageDiv'>
 			</div>
 		</div>
-		
+
     </body>
 </html>
