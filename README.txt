@@ -1,10 +1,9 @@
 Tiny World Machine Inc.
 
-This is my entry for Ludum Dare #23, based on the theme of 'Tiny World':
-http://www.ludumdare.com/compo/
+This is my entry for Ludum Dare #23, based on the theme of 'Tiny World.'
 
 You can play the game on my website:
-http://hi-scor.es/ld23/game.html
+http://hi-scor.es/tiny_world_machine/game.html
 
 Please keep in mind that this code was all written in 48 hours. It's not the prettiest, most-efficient, or best-organized -but it's fun.
 
@@ -19,7 +18,7 @@ TinyCampbell/src/GoalManager.js - Uses a finite state machine to keep track of t
 
 
 This game uses the Cocos2dJS graphics library
-http://cocos2d-javascript.org/ 
+http://cocos2d-javascript.org/
 
 
 Enjoy!
